@@ -3,11 +3,11 @@ import RPi.GPIO as GPIO
 
 
 class Stepper:
-	# We default to using pins
-	# 27 - Physical 13
-	# 22 - Physical 15
-	# 23 - Physical 16
-	# 24 - Physical 18
+	# We default to using these pins
+	# BCM27 - Physical 13 - IN1
+	# BCM22 - Physical 15 - IN2
+	# BCM23 - Physical 16 - IN3
+	# BCM24 - Physical 18 - IN4
 
 	__coil_a_1_pin = None
 	__coil_a_2_pin = None
@@ -18,9 +18,9 @@ class Stepper:
 	__step_seq = []
 	__delay = 0.025  # In seconds
 
-	__full_circle = 256
-	__half_circle = 128
-	__quarter_circle = 64
+	__full_rotation = 256
+	__half_rotation = 128
+	__quarter_rotation = 64
 
 	def __init__(self, pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025):
 		GPIO.setmode(GPIO.BCM)
@@ -35,21 +35,33 @@ class Stepper:
 		GPIO.setup(self.__coil_b_1_pin, GPIO.OUT)
 		GPIO.setup(self.__coil_b_2_pin, GPIO.OUT)
 
-		self.__step_seq.insert(0, [1, 0, 0, 0])
-		self.__step_seq.insert(1, [0, 1, 0, 0])
-		self.__step_seq.insert(2, [0, 0, 1, 0])
-		self.__step_seq.insert(3, [0, 0, 0, 1])
-		self.__step_seq.insert(4, [1, 0, 0, 0])
-		self.__step_seq.insert(5, [0, 1, 0, 0])
-		self.__step_seq.insert(6, [0, 0, 1, 0])
-		self.__step_seq.insert(7, [0, 0, 0, 1])
+		# self.__step_seq.insert(0, [1, 0, 0, 0])
+		# self.__step_seq.insert(1, [0, 1, 0, 0])
+		# self.__step_seq.insert(2, [0, 0, 1, 0])
+		# self.__step_seq.insert(3, [0, 0, 0, 1])
+		# self.__step_seq.insert(4, [1, 0, 0, 0])
+		# self.__step_seq.insert(5, [0, 1, 0, 0])
+		# self.__step_seq.insert(6, [0, 0, 1, 0])
+		# self.__step_seq.insert(7, [0, 0, 0, 1])
 
-		self.__delay = delay
-		self.set_circle(256)
+		# Change the sequence to half-step 64 steps per full rotation (Assuming it works correctly ¯\_('_')_/¯ )
+		self.__step_seq.insert(0, [0, 0, 0, 1])
+		self.__step_seq.insert(1, [0, 0, 1, 1])
+		self.__step_seq.insert(2, [0, 0, 1, 0])
+		self.__step_seq.insert(3, [0, 1, 1, 0])
+		self.__step_seq.insert(4, [0, 1, 0, 0])
+		self.__step_seq.insert(5, [1, 1, 0, 0])
+		self.__step_seq.insert(6, [1, 0, 0, 0])
+		self.__step_seq.insert(7, [1, 0, 0, 1])
+		# self.__step_seq.reverse()
+
+		self.set_delay(delay=delay)
+		self.set_circle(d=64)
 
 	def __del__(self):
 		# TODO
 		# Proper cleanup
+		self.stop()
 		GPIO.cleanup()
 
 	def set_step(self, w1, w2, w3, w4):
@@ -74,42 +86,48 @@ class Stepper:
 
 	def step_forward(self, steps):
 		for i in range(steps):
-			for j in reversed(range(0, self.__step_count)):
-				self.set_step(self.__step_seq[j][0], self.__step_seq[j][1], self.__step_seq[j][2],
-							  self.__step_seq[j][3])
+			for j in range(0, self.__step_count):
+				pin1 = self.__step_seq[j][0]
+				pin2 = self.__step_seq[j][1]
+				pin3 = self.__step_seq[j][2]
+				pin4 = self.__step_seq[j][3]
+				self.set_step(w1=pin1, w2=pin2, w3=pin3, w4=pin4)
 				time.sleep(self.__delay)
 		self.stop()
 
 	def step_backward(self, steps):
 		for i in range(steps):
-			for j in range(0, self.__step_count):
-				self.set_step(self.__step_seq[j][3], self.__step_seq[j][2], self.__step_seq[j][1],
-							  self.__step_seq[j][0])
+			for j in reversed(range(0, self.__step_count)):
+				pin1 = self.__step_seq[j][0]
+				pin2 = self.__step_seq[j][1]
+				pin3 = self.__step_seq[j][2]
+				pin4 = self.__step_seq[j][3]
+				self.set_step(w1=pin4, w2=pin3, w3=pin2, w4=pin1)
 				time.sleep(self.__delay)
 		self.stop()
 
-	def set_circle(self, d=256):
-		self.__full_circle = int(d)
-		self.__half_circle = int(d / 2)
-		self.__quarter_circle = int(d / 4)
+	def set_circle(self, d=64):
+		self.__full_rotation = int(d)
+		self.__half_rotation = int(d / 2)
+		self.__quarter_rotation = int(d / 4)
 
-	def get_full_half_quarter_circle(self):
-		return self.__full_circle, self.__half_circle, self.__quarter_circle
+	def get_full_half_quarter_rotation(self):
+		return self.__full_rotation, self.__half_rotation, self.__quarter_rotation
 
-	def full_circle_forward(self):
-		self.step_forward(self.__full_circle)
+	def full_rotation_forward(self):
+		self.step_forward(steps=self.__full_rotation)
 
-	def half_circle_forward(self):
-		self.step_forward(self.__half_circle)
+	def half_rotation_forward(self):
+		self.step_forward(steps=self.__half_rotation)
 
-	def quarter_circle_forward(self):
-		self.step_forward(self.__quarter_circle)
+	def quarter_rotation_forward(self):
+		self.step_forward(steps=self.__quarter_rotation)
 
-	def full_circle_backward(self):
-		self.step_backward(self.__full_circle)
+	def full_rotation_backward(self):
+		self.step_backward(steps=self.__full_rotation)
 
-	def half_circle_backward(self):
-		self.step_backward(self.__half_circle)
+	def half_rotation_backward(self):
+		self.step_backward(steps=self.__half_rotation)
 
-	def quarter_circle_backward(self):
-		self.step_backward(self.__quarter_circle)
+	def quarter_rotation_backward(self):
+		self.step_backward(steps=self.__quarter_rotation)
