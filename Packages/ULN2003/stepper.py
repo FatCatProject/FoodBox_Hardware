@@ -78,7 +78,7 @@ class Stepper:
 				self.set_step(self.__step_seq[j][0], self.__step_seq[j][1], self.__step_seq[j][2],
 							  self.__step_seq[j][3])
 				time.sleep(self.__delay)
-		self.__stop()
+		self.stop()
 
 	def step_backward(self, steps):
 		for i in range(steps):
@@ -86,7 +86,7 @@ class Stepper:
 				self.set_step(self.__step_seq[j][3], self.__step_seq[j][2], self.__step_seq[j][1],
 							  self.__step_seq[j][0])
 				time.sleep(self.__delay)
-		self.__stop()
+		self.stop()
 
 	def set_circle(self, d=256):
 		self.__full_circle = d
