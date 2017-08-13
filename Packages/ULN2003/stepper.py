@@ -89,9 +89,9 @@ class Stepper:
 		self.stop()
 
 	def set_circle(self, d=256):
-		self.__full_circle = d
-		self.__half_circle = d / 2
-		self.__quarter_circle = d / 4
+		self.__full_circle = int(d)
+		self.__half_circle = int(d / 2)
+		self.__quarter_circle = int(d / 4)
 
 	def get_full_half_quarter_circle(self):
 		return self.__full_circle, self.__half_circle, self.__quarter_circle
