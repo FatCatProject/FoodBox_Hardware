@@ -74,7 +74,7 @@ class Stepper:
 
 	def step_forward(self, steps):
 		for i in range(steps):
-			for j in reversed(range(self.__step_count)):
+			for j in reversed(range(0, self.__step_count)):
 				self.set_step(self.__step_seq[j][0], self.__step_seq[j][1], self.__step_seq[j][2],
 							  self.__step_seq[j][3])
 				time.sleep(self.__delay)
@@ -82,7 +82,7 @@ class Stepper:
 
 	def step_backward(self, steps):
 		for i in range(steps):
-			for j in reversed(range(self.__step_count)):
+			for j in range(0, self.__step_count):
 				self.set_step(self.__step_seq[j][3], self.__step_seq[j][2], self.__step_seq[j][1],
 							  self.__step_seq[j][0])
 				time.sleep(self.__delay)
