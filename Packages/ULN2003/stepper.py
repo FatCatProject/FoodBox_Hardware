@@ -45,7 +45,7 @@ class Stepper:
 		self.__step_seq.insert(7, [0, 0, 0, 1])
 
 		self.__delay = delay
-		self.set_circle(self, 256)
+		self.set_circle(256)
 
 	def __del__(self):
 		# TODO
