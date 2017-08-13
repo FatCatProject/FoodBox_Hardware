@@ -97,19 +97,19 @@ class Stepper:
 		return self.__full_circle, self.__half_circle, self.__quarter_circle
 
 	def full_circle_forward(self):
-		self.step_forward(self, self.__full_circle)
+		self.step_forward(self.__full_circle)
 
 	def half_circle_forward(self):
-		self.step_forward(self, self.__half_circle)
+		self.step_forward(self.__half_circle)
 
 	def quarter_circle_forward(self):
-		self.step_forward(self, self.__quarter_circle)
+		self.step_forward(self.__quarter_circle)
 
 	def full_circle_backward(self):
-		self.step_backward(self, self.__full_circle)
+		self.step_backward(self.__full_circle)
 
 	def half_circle_backward(self):
-		self.step_backward(self, self.__half_circle)
+		self.step_backward(self.__half_circle)
 
 	def quarter_circle_backward(self):
-		self.step_backward(self, self.__quarter_circle)
+		self.step_backward(self.__quarter_circle)
