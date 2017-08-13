@@ -18,9 +18,9 @@ class Stepper:
 	__step_seq = []
 	__delay = 0.025  # In seconds
 
-	__full_rotation = 256
-	__half_rotation = 128
-	__quarter_rotation = 64
+	__full_rotation = 0
+	__half_rotation = 0
+	__quarter_rotation = 0
 
 	def __init__(self, pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025):
 		GPIO.setmode(GPIO.BCM)
