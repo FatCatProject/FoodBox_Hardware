@@ -1,27 +1,35 @@
-BOARD = 1
+BOARD = 0
+BCM = 1
+
+IN = 0
 OUT = 1
-IN = 1
+
+INPUT = 0
+OUTPUT = 1
+
+LOW = 0
+HIGH = 1
 
 
 def setmode(a):
-	print(a)
+	pass
 
 
 def setup(a, b):
-	print(a)
+	pass
 
 
 def output(a, b):
-	print(a)
+	pass
 
 
 def cleanup():
-	print('a')
+	pass
 
 
 def setmode(a):
-	print(a)
+	pass
 
 
 def setwarnings(flag):
-	print('False')
+	pass
