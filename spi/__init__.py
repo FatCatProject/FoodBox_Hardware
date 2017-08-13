@@ -2,5 +2,5 @@ def transfer(a):
 	pass
 
 
-def openSPI(a, b):
+def openSPI(device, speed):
 	pass
