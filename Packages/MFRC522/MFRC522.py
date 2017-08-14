@@ -112,12 +112,28 @@ class MFRC522:
 
 	serNum = []
 
-	def __init__(self, dev='/dev/spidev0.0', spd=1000000):
+	__SDA = None
+	__SCK = None
+	__MOSI = None
+	__MISO = None
+	__RST = None
+
+	def __init__(self, dev='/dev/spidev0.0', spd=1000000, SDA=24, SCK=23, MOSI=19, MISO=21, RST=22):
+		# When / if we decide to change this to BCM mode use SDA=8, SCK=11, MOSI=10, MISO=9, RST=25
+		self.__SDA = SDA
+		self.__SCK = SCK
+		self.__MOSI = MOSI
+		self.__MISO = MISO
+		self.__RST = RST
+
 		spi.openSPI(device=dev, speed=spd)
 		GPIO.setmode(GPIO.BOARD)
-		GPIO.setup(22, GPIO.OUT)
+		GPIO.setup(self.__RST, GPIO.OUT)
 		GPIO.output(self.NRSTPD, 1)
 		self.MFRC522_Init()
+
+	def __del__(self):
+		GPIO.cleanup()
 
 	def MFRC522_Reset(self):
 		self.Write_MFRC522(self.CommandReg, self.PCD_RESETPHASE)
@@ -396,3 +412,10 @@ class MFRC522:
 		self.Write_MFRC522(self.TxAutoReg, 0x40)
 		self.Write_MFRC522(self.ModeReg, 0x3D)
 		self.AntennaOn()
+
+	def get_uid(self):
+		status, uid = self.MFRC522_Anticoll()
+		if status == self.MI_OK:
+			return uid
+		else:
+			return None
