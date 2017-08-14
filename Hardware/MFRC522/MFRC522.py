@@ -12,7 +12,7 @@ import spi
 
 
 class MFRC522:
-	NRSTPD = 22
+	NRSTPD = 25
 
 	MAX_LEN = 16
 
@@ -118,16 +118,17 @@ class MFRC522:
 	__MISO = None
 	__RST = None
 
-	def __init__(self, dev='/dev/spidev0.0', spd=1000000, SDA=24, SCK=23, MOSI=19, MISO=21, RST=22):
+	def __init__(self, dev='/dev/spidev0.0', spd=1000000, SDA=8, SCK=11, MOSI=10, MISO=9, RST=25):
 		# When / if we decide to change this to BCM mode use SDA=8, SCK=11, MOSI=10, MISO=9, RST=25
 		self.__SDA = SDA
 		self.__SCK = SCK
 		self.__MOSI = MOSI
 		self.__MISO = MISO
 		self.__RST = RST
+		self.NRSTPD = self.__RST
 
 		spi.openSPI(device=dev, speed=spd)
-		GPIO.setmode(GPIO.BOARD)
+		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(self.__RST, GPIO.OUT)
 		GPIO.output(self.NRSTPD, 1)
 		self.MFRC522_Init()
