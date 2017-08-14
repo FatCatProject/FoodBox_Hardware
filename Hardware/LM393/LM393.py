@@ -14,7 +14,7 @@ class LM393:
 		GPIO.setup(self.__pin_num, GPIO.IN)
 
 	def __del__(self):
-		GPIO.cleanup()
+		pass
 
 	def is_blocked(self):
 		if (1 - GPIO.input(self.__pin_num)) == 0:
