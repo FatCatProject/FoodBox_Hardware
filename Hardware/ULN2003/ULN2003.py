@@ -35,15 +35,6 @@ class ULN2003:
 		GPIO.setup(self.__coil_b_1_pin, GPIO.OUT)
 		GPIO.setup(self.__coil_b_2_pin, GPIO.OUT)
 
-		# self.__step_seq.insert(0, [1, 0, 0, 0])
-		# self.__step_seq.insert(1, [0, 1, 0, 0])
-		# self.__step_seq.insert(2, [0, 0, 1, 0])
-		# self.__step_seq.insert(3, [0, 0, 0, 1])
-		# self.__step_seq.insert(4, [1, 0, 0, 0])
-		# self.__step_seq.insert(5, [0, 1, 0, 0])
-		# self.__step_seq.insert(6, [0, 0, 1, 0])
-		# self.__step_seq.insert(7, [0, 0, 0, 1])
-
 		# Change the sequence to half-step 64 steps per full rotation (Assuming it works correctly ¯\_('_')_/¯ )
 		self.__step_seq.insert(0, [0, 0, 0, 1])
 		self.__step_seq.insert(1, [0, 0, 1, 1])
@@ -56,13 +47,18 @@ class ULN2003:
 		# self.__step_seq.reverse()
 
 		self.set_delay(delay=delay)
-		self.set_circle(d=64)
+		self.set_circle(d=512)
 
 	def __del__(self):
-		# TODO
-		# Proper cleanup
 		self.stop()
-		GPIO.cleanup()
+		GPIO.output(self.__coil_a_1_pin, GPIO.LOW)
+		GPIO.output(self.__coil_a_2_pin, GPIO.LOW)
+		GPIO.output(self.__coil_b_1_pin, GPIO.LOW)
+		GPIO.output(self.__coil_b_2_pin, GPIO.LOW)
+		GPIO.setup(self.__coil_a_1_pin, GPIO.IN)
+		GPIO.setup(self.__coil_a_2_pin, GPIO.IN)
+		GPIO.setup(self.__coil_b_1_pin, GPIO.IN)
+		GPIO.setup(self.__coil_b_2_pin, GPIO.IN)
 
 	def set_step(self, w1, w2, w3, w4):
 		GPIO.output(self.__coil_a_1_pin, w1)
@@ -71,10 +67,10 @@ class ULN2003:
 		GPIO.output(self.__coil_b_2_pin, w4)
 
 	def stop(self):
-		GPIO.output(self.__coil_a_1_pin, 0)
-		GPIO.output(self.__coil_a_2_pin, 0)
-		GPIO.output(self.__coil_b_1_pin, 0)
-		GPIO.output(self.__coil_b_2_pin, 0)
+		GPIO.output(self.__coil_a_1_pin, GPIO.LOW)
+		GPIO.output(self.__coil_a_2_pin, GPIO.LOW)
+		GPIO.output(self.__coil_b_1_pin, GPIO.LOW)
+		GPIO.output(self.__coil_b_2_pin, GPIO.LOW)
 
 	def get_delay(self):
 		return self.__delay
@@ -106,7 +102,7 @@ class ULN2003:
 				time.sleep(self.__delay)
 		self.stop()
 
-	def set_circle(self, d=64):
+	def set_circle(self, d=512):
 		self.__full_rotation = int(d)
 		self.__half_rotation = int(d / 2)
 		self.__quarter_rotation = int(d / 4)
