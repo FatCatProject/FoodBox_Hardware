@@ -2,7 +2,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-class Stepper:
+class ULN2003:
 	# We default to using these pins
 	# BCM27 - Physical 13 - IN1
 	# BCM22 - Physical 15 - IN2
@@ -102,7 +102,7 @@ class Stepper:
 				pin2 = self.__step_seq[j][1]
 				pin3 = self.__step_seq[j][2]
 				pin4 = self.__step_seq[j][3]
-				self.set_step(w1=pin4, w2=pin3, w3=pin2, w4=pin1)
+				self.set_step(w1=pin1, w2=pin2, w3=pin3, w4=pin4)
 				time.sleep(self.__delay)
 		self.stop()
 
