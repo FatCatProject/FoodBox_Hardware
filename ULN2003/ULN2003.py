@@ -2,7 +2,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-class Stepper:
+class ULN2003:
 	# We default to using these pins
 	# BCM27 - Physical 13 - IN1
 	# BCM22 - Physical 15 - IN2
