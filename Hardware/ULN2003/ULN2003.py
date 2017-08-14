@@ -47,7 +47,7 @@ class ULN2003:
 		# self.__step_seq.reverse()
 
 		self.set_delay(delay=delay)
-		self.set_circle(d=256)
+		self.set_circle(d=512)
 
 	def __del__(self):
 		self.stop()
@@ -102,7 +102,7 @@ class ULN2003:
 				time.sleep(self.__delay)
 		self.stop()
 
-	def set_circle(self, d=256):
+	def set_circle(self, d=512):
 		self.__full_rotation = int(d)
 		self.__half_rotation = int(d / 2)
 		self.__quarter_rotation = int(d / 4)
