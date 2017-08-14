@@ -414,7 +414,8 @@ class MFRC522:
 		self.AntennaOn()
 
 	def get_uid(self):
-		status, uid = self.MFRC522_Anticoll()
+		(status, TagType) = self.MFRC522_Request(self.PICC_REQIDL)
+		(status, uid) = self.MFRC522_Anticoll()
 		if status == self.MI_OK:
 			return uid
 		else:
