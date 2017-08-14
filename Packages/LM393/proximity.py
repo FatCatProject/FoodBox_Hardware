@@ -5,7 +5,7 @@ import time
 # 	print(1-(GPIO.input(17))) <-- by default 0=sensor blocked , 1 sensor opened
 
 
-class LM393:
+class Proximity:
 	__pin_num = None
 
 	def __init__(self, pin_num=17):
