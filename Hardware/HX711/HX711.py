@@ -3,18 +3,17 @@
 # Using Richard-Major's work
 # https://gist.github.com/Richard-Major/64e94338c2d08eb1221c2eca9e014362
 import RPi.GPIO as GPIO
-import time
 
 
 class HX711:
 	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24):
-		GPIO.setmode(GPIO.BCM)
 		self.PD_SCK = pd_sck
 		self.DOUT = dout
 		self.readBits = readBits
 		self.twosComplementOffset = 1 << readBits
 		self.twosComplementCheck = self.twosComplementOffset >> 1
 
+		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(self.PD_SCK, GPIO.OUT)
 		GPIO.setup(self.DOUT, GPIO.IN)
 
@@ -24,11 +23,6 @@ class HX711:
 		self.lastVal = 0
 
 		self.set_gain(gain)
-
-	def __del__(self):
-		GPIO.output(self.PD_SCK, False)
-		GPIO.setup(self.PD_SCK, GPIO.IN)
-		GPIO.setup(self.DOUT, GPIO.IN)
 
 	def is_ready(self):
 		return GPIO.input(self.DOUT) == 0
@@ -51,9 +45,7 @@ class HX711:
 	def setChannelGainFactor(self):
 		for i in range(self.GAIN):
 			GPIO.output(self.PD_SCK, True)
-			time.sleep(0.000001)
 			GPIO.output(self.PD_SCK, False)
-			time.sleep(0.000001)
 
 	def correctForTwosComplement(self, unsignedValue):
 		if (unsignedValue >= self.twosComplementCheck):
@@ -66,14 +58,11 @@ class HX711:
 		unsignedValue = 0
 
 		for i in range(0, self.readBits):
-			unsignedValue = unsignedValue << 1
 			GPIO.output(self.PD_SCK, True)
-			time.sleep(0.000001)
-			bit = GPIO.input(self.DOUT)
+			unsignedValue = unsignedValue << 1
 			GPIO.output(self.PD_SCK, False)
-			time.sleep(0.00005)
-
-			if bit:
+			bit = GPIO.input(self.DOUT)
+			if (bit):
 				unsignedValue = unsignedValue | 1
 
 		self.setChannelGainFactor()
@@ -113,8 +102,8 @@ class HX711:
 		GPIO.output(self.PD_SCK, False)
 
 
-############# EXAMPLE
-# hx = HX711(dout=4, pd_sck=18, gain=128, readBits=24)
+# ############# EXAMPLE
+# hx = HX711(27, 17, 128)
 # hx.set_scale(7050)
 # hx.tare()
 #
