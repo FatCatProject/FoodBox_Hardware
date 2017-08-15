@@ -114,15 +114,15 @@ class HX711:
 
 
 ############# EXAMPLE
-hx = HX711(27, 17, 128)
-hx.set_scale(7050)
-hx.tare()
-
-while True:
-	try:
-		val = hx.get_units(1)
-		offset = max(1, min(80, int(val + 40)))
-		otherOffset = 100 - offset;
-		print(" " * offset + "#" + " " * otherOffset + "{0: 4.4f}".format(val));
-	except (KeyboardInterrupt, SystemExit):
-		break
+# hx = HX711(dout=4, pd_sck=18, gain=128, readBits=24)
+# hx.set_scale(7050)
+# hx.tare()
+#
+# while True:
+# 	try:
+# 		val = hx.get_units(1)
+# 		offset = max(1, min(80, int(val + 40)))
+# 		otherOffset = 100 - offset;
+# 		print(" " * offset + "#" + " " * otherOffset + "{0: 4.4f}".format(val));
+# 	except (KeyboardInterrupt, SystemExit):
+# 		break
