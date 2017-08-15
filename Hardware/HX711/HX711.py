@@ -5,6 +5,11 @@
 import RPi.GPIO as GPIO
 
 
+# fatcat1
+# fatcat2 OFFSET = -96096, SCALE=925
+# fatcat3
+
+
 class HX711:
 	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24):
 		self.PD_SCK = pd_sck
@@ -23,6 +28,10 @@ class HX711:
 		self.lastVal = 0
 
 		self.set_gain(gain)
+
+	def __del__(self):
+		GPIO.setup(self.PD_SCK, GPIO.IN)
+		GPIO.setup(self.DOUT, GPIO.IN)
 
 	def is_ready(self):
 		return GPIO.input(self.DOUT) == 0
@@ -100,7 +109,6 @@ class HX711:
 
 	def power_up(self):
 		GPIO.output(self.PD_SCK, False)
-
 
 # ############# EXAMPLE
 # hx = HX711(27, 17, 128)
