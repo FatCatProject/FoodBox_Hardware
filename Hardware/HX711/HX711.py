@@ -1,140 +1,116 @@
-# Using underdoeg's work
-# https://gist.github.com/underdoeg/98a38b54f889fce2b237
+#!/usr/bin/python3
+# Development for reading sparkfun HX711 load cell amp
+# Using Richard-Major's work
+# https://gist.github.com/Richard-Major/64e94338c2d08eb1221c2eca9e014362
 import RPi.GPIO as GPIO
-
-
-def createBoolList(size=8):
-	ret = []
-	for i in range(size):
-		ret.append(False)
-	return ret
-
+import time
+GPIO.setmode(GPIO.BCM)
 
 class HX711:
+    def __init__(self, dout, pd_sck, gain=128, readBits=24):
+        self.PD_SCK = pd_sck
+        self.DOUT = dout
+        self.readBits = readBits
+        self.twosComplementOffset = 1 << readBits
+        self.twosComplementCheck = self.twosComplementOffset >> 1
 
+        GPIO.setup(self.PD_SCK, GPIO.OUT)
+        GPIO.setup(self.DOUT, GPIO.IN)
 
-	DOUT = None
-	PD_SCK = None
-	GAIN = None
-	OFFSET = None
-	SCALE = None
-	lastVal = None
+        self.GAIN = 0
+        self.OFFSET = 0
+        self.SCALE = 1
+        self.lastVal = 0
 
-	def __init__(self, dout=4, pd_sck=18, gain=128):
-		self.PD_SCK = pd_sck
-		self.DOUT = dout
+        self.set_gain(gain)
 
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(self.PD_SCK, GPIO.OUT)
-		GPIO.setup(self.DOUT, GPIO.IN)
+    def is_ready(self):
+        return GPIO.input(self.DOUT) == 0
 
-		self.GAIN = 0
-		self.OFFSET = 0
-		self.SCALE = 1
-		self.lastVal = 0
+    def set_gain(self, gain):
+        if gain is 128:
+            self.GAIN = 1
+        elif gain is 64:
+            self.GAIN = 3
+        elif gain is 32:
+            self.GAIN = 2
 
-		self.set_gain(gain);
+        GPIO.output(self.PD_SCK, False)
+        self.read()
 
-	def __del__(self):
-		pass
+    def waitForReady(self):
+        while not self.is_ready():
+            pass
 
-	def is_ready(self):
-		return GPIO.input(self.DOUT) == 0
+    def setChannelGainFactor(self):
+        for i in range(self.GAIN):
+          GPIO.output(self.PD_SCK, True)
+          GPIO.output(self.PD_SCK, False)
 
-	def set_gain(self, gain):
-		if gain is 128:
-			self.GAIN = 1
-		elif gain is 64:
-			self.GAIN = 3
-		elif gain is 32:
-			self.GAIN = 2
+    def correctForTwosComplement( self , unsignedValue ):
+        if ( unsignedValue >= self.twosComplementCheck ):
+            return -self.twosComplementOffset + unsignedValue
+        else:
+            return unsignedValue
 
-		GPIO.output(self.PD_SCK, False)
-		self.read()
+    def read(self):
+        self.waitForReady();
+        unsignedValue = 0
 
-	def read(self):
-		while not self.is_ready():
-			# print("WAITING")
-			pass
+        for i in range(0,self.readBits):
+            GPIO.output(self.PD_SCK, True)
+            unsignedValue = unsignedValue << 1
+            GPIO.output(self.PD_SCK, False)
+            bit = GPIO.input(self.DOUT)
+            if ( bit ):
+              unsignedValue = unsignedValue | 1
 
-		dataBits = [createBoolList(), createBoolList(), createBoolList()]
+        self.setChannelGainFactor()
+        signedValue = self.correctForTwosComplement( unsignedValue )
 
-		for j in range(2, -1, -1):
-			for i in range(7, -1, -1):
-				GPIO.output(self.PD_SCK, True)
-				dataBits[j][i] = GPIO.input(self.DOUT)
-				GPIO.output(self.PD_SCK, False)
+        self.lastVal = signedValue
+        return self.lastVal
 
-		# set channel and gain factor for next reading
-		# for i in range(self.GAIN):
-		GPIO.output(self.PD_SCK, True)
-		GPIO.output(self.PD_SCK, False)
+    def read_average(self, times=3):
+        sum = 0
+        for i in range(times):
+            sum += self.read()
 
-		# check for all 1
-		if all(item is True for item in dataBits[0]):
-			return self.lastVal
+        return sum / times
 
-		bits = []
-		for i in range(2, -1, -1):
-			bits += dataBits[i]
+    def get_value(self, times=3):
+        return self.read_average(times) - self.OFFSET
 
-		self.lastVal = int(''.join(map(str, bits)), 2)
-		return self.lastVal
+    def get_units(self, times=3):
+        return self.get_value(times) / self.SCALE
 
-		'''
-		data = [0,0,0]
-		for i in range(0,3):
-			#print(''.join(map(str, dataBits[i])))
-			data[i] = int(''.join(map(str, dataBits[i])), 2)
-			#print(data[i])
+    def tare(self, times=15):
+        sum = self.read_average(times)
+        self.set_offset(sum)
 
-		#data[2] ^= 0x80
-		return data[2] << 16 | data[1] << 8 | data[0]
-		'''
+    def set_scale(self, scale):
+        self.SCALE = scale
 
-	def read_average(self, times=3):
-		sum = 0
-		for i in range(times):
-			sum += self.read()
+    def set_offset(self, offset):
+        self.OFFSET = offset
 
-		return sum / times
+    def power_down(self):
+        GPIO.output(self.PD_SCK, False)
+        GPIO.output(self.PD_SCK, True)
 
-	def get_value(self, times=3):
-		return self.read_average(times) - self.OFFSET
+    def power_up(self):
+        GPIO.output(self.PD_SCK, False)
 
-	def get_units(self, times=3):
-		return self.get_value(times) / self.SCALE
+############# EXAMPLE
+hx = HX711(27, 17,128)
+hx.set_scale(7050)
+hx.tare()
 
-	def tare(self, times=15):
-		sum = self.read_average(times)
-		self.set_offset(sum)
-
-	def set_scale(self, scale):
-		self.SCALE = scale
-
-	def set_offset(self, offset):
-		self.OFFSET = offset
-
-	def power_down(self):
-		GPIO.output(self.PD_SCK, False)
-		GPIO.output(self.PD_SCK, True)
-
-	def power_up(self):
-		GPIO.output(self.PD_SCK, False)
-
-
-# ############# EXAMPLE
-# hx = HX711(9, 11)
-# hx.set_scale(7050)
-# hx.tare()
-#
-# while True:
-# 	try:
-# 		val = hx.get_units(3)
-# 		if val > 100:
-# 			print("OH NO")
-# 			# hx.power_down()
-# 			# time.sleep(.001)
-# 			# hx.power_up()
-# 	except (KeyboardInterrupt, SystemExit):
-# 		sys.exit()
+while True:
+    try:
+        val = hx.get_units(1)
+        offset = max(1,min(80,int(val+40)))
+        otherOffset = 100-offset;
+        print (" "*offset+"#"+" "*otherOffset+"{0: 4.4f}".format(val));
+    except (KeyboardInterrupt, SystemExit):
+        break
