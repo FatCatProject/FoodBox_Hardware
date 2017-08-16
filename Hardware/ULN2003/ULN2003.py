@@ -22,7 +22,9 @@ class ULN2003:
 	__half_rotation = 0
 	__quarter_rotation = 0
 
-	def __init__(self, pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025):
+	__presentation_mode = None				# To be used on presentation day only to override rotation speed.
+
+	def __init__(self, pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025, presentation_mode=False):
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setwarnings(False)
 
@@ -46,6 +48,7 @@ class ULN2003:
 		self.__step_seq.insert(7, [1, 0, 0, 1])
 		# self.__step_seq.reverse()
 
+		self.__presentation_mode = presentation_mode
 		self.set_delay(delay=delay)
 		self.set_circle(d=512)
 
@@ -76,7 +79,7 @@ class ULN2003:
 		return self.__delay
 
 	def set_delay(self, delay=0.025):
-		if delay < 0.025:
+		if (not self.__presentation_mode) and (delay < 0.025):
 			delay = 0.025
 		self.__delay = delay
 
