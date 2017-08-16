@@ -33,3 +33,6 @@ def setmode(a):
 
 def setwarnings(flag):
 	pass
+
+def input(a):
+	return 0
