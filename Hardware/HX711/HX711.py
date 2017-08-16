@@ -3,7 +3,6 @@
 # Using Richard-Major's work
 # https://gist.github.com/Richard-Major/64e94338c2d08eb1221c2eca9e014362
 import RPi.GPIO as GPIO
-import time
 
 
 # fatcat1
@@ -12,7 +11,7 @@ import time
 
 
 class HX711:
-	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24, offset=-96096, scale=925):
+	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24):
 		self.PD_SCK = pd_sck
 		self.DOUT = dout
 		self.readBits = readBits
@@ -24,11 +23,8 @@ class HX711:
 		GPIO.setup(self.DOUT, GPIO.IN)
 
 		self.GAIN = 0
-		self.OFFSET = offset
-		if scale == 0:
-			self.SCALE = 1
-		else:
-			self.SCALE = scale
+		self.OFFSET = 0
+		self.SCALE = 1
 		self.lastVal = 0
 
 		self.set_gain(gain)
@@ -61,14 +57,12 @@ class HX711:
 			GPIO.output(self.PD_SCK, False)
 
 	def correctForTwosComplement(self, unsignedValue):
-		if unsignedValue >= self.twosComplementCheck:
+		if (unsignedValue >= self.twosComplementCheck):
 			return -self.twosComplementOffset + unsignedValue
 		else:
 			return unsignedValue
 
 	def read(self):
-		# Need to power up the device only since we are powering it down at the end of the read.
-		self.power_up()
 		self.waitForReady();
 		unsignedValue = 0
 
@@ -84,8 +78,6 @@ class HX711:
 		signedValue = self.correctForTwosComplement(unsignedValue)
 
 		self.lastVal = signedValue
-		# Power down the device to hopefully prevent random jumps in read values.
-		self.power_down()
 		return self.lastVal
 
 	def read_average(self, times=3):
@@ -114,35 +106,20 @@ class HX711:
 	def power_down(self):
 		GPIO.output(self.PD_SCK, False)
 		GPIO.output(self.PD_SCK, True)
-		time.sleep(0.01)
 
 	def power_up(self):
 		GPIO.output(self.PD_SCK, False)
-		time.sleep(0.01)
 
-	def read_trimmed_average(self, times=10):
-		values = []
-		values_average = 0
-		for i in range(times):
-			tmp = self.read()
-			values.append(tmp)
-			values_average += tmp
-
-		trimmed_values = []
-		values_average /= times
-		for val in values:
-			if abs(values_average - val) < self.OFFSET:
-				trimmed_values.append(val)
-
-		trimmed_avg = 0
-		for val in values:
-			trimmed_avg += val
-		trimmed_avg /= len(trimmed_values)
-
-		return trimmed_avg
-
-	def get_trimmed_value(self, times=10):
-		return self.read_trimmed_average(times) - self.OFFSET
-
-	def get_trimmed_units(self, times=10):
-		return self.get_trimmed_value(times) / self.SCALE
+# ############# EXAMPLE
+# hx = HX711(27, 17, 128)
+# hx.set_scale(7050)
+# hx.tare()
+#
+# while True:
+# 	try:
+# 		val = hx.get_units(1)
+# 		offset = max(1, min(80, int(val + 40)))
+# 		otherOffset = 100 - offset;
+# 		print(" " * offset + "#" + " " * otherOffset + "{0: 4.4f}".format(val));
+# 	except (KeyboardInterrupt, SystemExit):
+# 		break
