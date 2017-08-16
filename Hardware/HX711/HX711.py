@@ -11,7 +11,7 @@ import RPi.GPIO as GPIO
 
 
 class HX711:
-	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24):
+	def __init__(self, dout=4, pd_sck=18, gain=128, readBits=24, offset=-96096, scale=925):
 		self.PD_SCK = pd_sck
 		self.DOUT = dout
 		self.readBits = readBits
@@ -23,8 +23,8 @@ class HX711:
 		GPIO.setup(self.DOUT, GPIO.IN)
 
 		self.GAIN = 0
-		self.OFFSET = 0
-		self.SCALE = 1
+		self.set_offset(offset)
+		self.set_scale(scale)
 		self.lastVal = 0
 
 		self.set_gain(gain)
@@ -57,13 +57,13 @@ class HX711:
 			GPIO.output(self.PD_SCK, False)
 
 	def correctForTwosComplement(self, unsignedValue):
-		if (unsignedValue >= self.twosComplementCheck):
+		if unsignedValue >= self.twosComplementCheck:
 			return -self.twosComplementOffset + unsignedValue
 		else:
 			return unsignedValue
 
 	def read(self):
-		self.waitForReady();
+		self.waitForReady()
 		unsignedValue = 0
 
 		for i in range(0, self.readBits):
@@ -98,6 +98,8 @@ class HX711:
 		self.set_offset(sum)
 
 	def set_scale(self, scale):
+		if scale == 0:
+			scale = 1
 		self.SCALE = scale
 
 	def set_offset(self, offset):
@@ -109,17 +111,3 @@ class HX711:
 
 	def power_up(self):
 		GPIO.output(self.PD_SCK, False)
-
-# ############# EXAMPLE
-# hx = HX711(27, 17, 128)
-# hx.set_scale(7050)
-# hx.tare()
-#
-# while True:
-# 	try:
-# 		val = hx.get_units(1)
-# 		offset = max(1, min(80, int(val + 40)))
-# 		otherOffset = 100 - offset;
-# 		print(" " * offset + "#" + " " * otherOffset + "{0: 4.4f}".format(val));
-# 	except (KeyboardInterrupt, SystemExit):
-# 		break
