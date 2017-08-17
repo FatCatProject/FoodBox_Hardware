@@ -102,3 +102,6 @@ ENV/
 
 # PyCharm
 .idea/
+
+# DB file
+foodboxDB.db
