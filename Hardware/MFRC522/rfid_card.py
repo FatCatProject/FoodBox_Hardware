@@ -4,9 +4,9 @@ class RFIDCard:
 	__active = False
 
 	def __init__(self, uid, name=None, active=False):
-		self.set_uid(uid=uid)
-		self.set_name(name=name)
-		self.set_active(active=active)
+		self.__set_uid(uid=uid)
+		self.__set_name(name=name)
+		self.__set_active(active=active)
 
 	def __del__(self):
 		del self.__uid
@@ -22,7 +22,7 @@ class RFIDCard:
 				uid.append(int(x, base=16))
 			return tuple(uid)
 
-	def set_uid(self, uid):
+	def __set_uid(self, uid):
 		assert type(uid) is str, "uid is not of type str, it is %r" % type(uid)
 
 		strlst = uid.split("-")
@@ -55,14 +55,14 @@ class RFIDCard:
 	def get_name(self):
 		return self.__name
 
-	def set_name(self, name):
+	def __set_name(self, name):
 		self.__name = str(name)
 		return
 
 	def get_active(self):
 		return self.__active
 
-	def set_active(self, active):
+	def __set_active(self, active):
 		assert type(active) is bool, "active is not bool type, it is %r" % type(active)
 		self.__active = active
 		return
