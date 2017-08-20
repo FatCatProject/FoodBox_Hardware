@@ -31,7 +31,7 @@ class RFIDCard:
 		is_valid_numeric = True
 		is_valid_hex = True
 		for x in strlst:
-			is_valid_numeric = is_valid_numeric and x.isumeric() and 0 <= int(x) <= 255
+			is_valid_numeric = is_valid_numeric and x.isnumeric() and 0 <= int(x) <= 255
 		for x in strlst:
 			try:
 				tmphex = int(x, base=16)
