@@ -33,7 +33,7 @@ class RFIDCard:
 		isvalidnumeric = True
 		isvalidhex = True
 		for x in strlst:
-			isvalidnumeric = isvalidnumeric and x.isumeric() and 0 <= int(x) <= 255
+			isvalidnumeric = isvalidnumeric and x.isnumeric() and 0 <= int(x) <= 255
 		for x in strlst:
 			try:
 				tmphex = int(x, base=16)
@@ -74,7 +74,7 @@ class RFIDCard:
 		return
 
 	def __str__(self):
-		string = self.__uid[0] + "-" + self.__uid[1] + "-" + self.__uid[2] + "-" + self.__uid[3]
+		string = str(int(self.__uid[0],base=16)) + "-" + str(int(self.__uid[1],base=16)) + "-" + str(int(self.__uid[2],base=16)) + "-" + str(int(self.__uid[3],base=16))
 
 		if self.__name is not None:
 			string += ", " + self.__name
