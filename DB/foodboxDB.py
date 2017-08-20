@@ -89,6 +89,15 @@ class FoodBoxDB:
 					state = True
 		return exists, state
 
+	def set_state_from_object(self, mycard: RFIDCard):
+		"""
+		Function gets card as object and sets the state as requested
+		If the card doesn't exist - Adding new card and setting the newState as requested
+		"""
+		cardID = mycard.get_uid()
+		newState = mycard.get_active()
+		self.set_state(cardID, newState)
+
 	def set_state(self, cardID, newState):
 		"""
 		Function gets cardID number and a state to set it to = Active or Not active
@@ -134,7 +143,7 @@ print(fbdb.get_all_cards())
 # print(fbdb.get_not_active_cards())
 # print(fbdb.card_state('126-126-126-126'))
 # print(fbdb.set_state('129-129-129-129', True))
-fbdb.add_card('111-111-111-111')
+fbdb.add_card('222-222-222-222')
 
-fbdb.delete_card('111-111-111-111')
+fbdb.delete_card('222-222-222-222')
 print(fbdb.get_all_cards())
