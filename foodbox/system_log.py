@@ -1,4 +1,5 @@
 import time
+from Hardware import RFIDCard
 from enum import Enum
 
 
@@ -33,65 +34,53 @@ class SystemLog:
 		return self.__rowid
 
 	def set_rowid(self, rowid):
-		if rowid is None:
-			self.__rowid = None
-		elif type(rowid) is int:
-			self.__rowid = rowid
-		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert rowid is None or type(rowid) is int, "rowid is neither an integer nor None, it is : %r" % type(rowid)
+		self.__rowid = rowid
+		return
 
 	def get_card(self):
 		return self.__card
 
 	def set_card(self, card):
-		# TODO - complete this with Card class
-		if card is None:
-			self.__card = None
-		# elif type(card_id) is PlaceHolderForCardClass:
-		# 	self.__card = card
-		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert card is None or type(card) is RFIDCard, "card is neither an RFIDCard nor None, it is : %r" % type(card)
+		self.__card = card
+		return
 
 	def get_time_stamp(self):
 		return self.__timestamp
 
 	def set_time_stamp(self, time_stamp):
+		assert type(time_stamp) is time.struct_time or type(time_stamp) is float or type(
+			time_stamp) is int, "time_stamp is neither an time.struct_time nor int or float, it is : %r" % type(
+			time_stamp)
 		if type(time_stamp) is time.struct_time:
 			self.__timestamp = time_stamp
-		elif type(time_stamp) is float or type(time_stamp) is int:
-			self.__timestamp = time.gmtime(time_stamp)
 		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+			#  elif type(time_stamp) is float or type(time_stamp) is int:
+			self.__timestamp = time.gmtime(time_stamp)
+		return
 
 	def get_message_type(self):
 		return self.get_message_type()
 
 	def set_message_type(self, message_type):
-		if type(message_type) is type(MessageTypes):
-			self.__type = message_type
-		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert type(message_type) is type(MessageTypes), "message_type is not an MessageTypes, it is : %r" % type(
+			message_type)
+		self.__type = message_type
+		return
 
 	def get_severity(self):
 		return self.__severity
 
 	def set_severity(self, severity):
-		if type(severity) is int:
-			self.__severity = severity
-		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert type(severity) is int, "severity is not an int, it is : %r" % type(severity)
+		self.__severity = severity
+		return
 
 	def get_message(self):
 		return self.__msg
 
 	def set_message(self, message):
-		if type(message) is str:
-			self.__msg = message
-		else:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert type(message) is str, "message is not an str, it is : %r" % type(message)
+		self.__msg = message
+		return
