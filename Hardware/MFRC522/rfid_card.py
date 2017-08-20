@@ -23,32 +23,28 @@ class RFIDCard:
 			return tuple(uid)
 
 	def set_uid(self, uid):
-		if not type(uid) is str:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert type(uid) is str, "uid is not of type str, it is %r" % type(uid)
+
 		strlst = uid.split("-")
-		if len(strlst) != 4:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
-		isvalidnumeric = True
-		isvalidhex = True
+		assert len(strlst) == 4, "uid is malformed, uid: %r" % uid
+
+		is_valid_numeric = True
+		is_valid_hex = True
 		for x in strlst:
-			isvalidnumeric = isvalidnumeric and x.isnumeric() and 0 <= int(x) <= 255
+			is_valid_numeric = is_valid_numeric and x.isumeric() and 0 <= int(x) <= 255
 		for x in strlst:
 			try:
 				tmphex = int(x, base=16)
-			except:
-				isvalidhex = False
+			except Exception as e:
+				is_valid_hex = False
 				break
-			isvalidhex = isvalidhex and int(hex(0), base=16) <= int(hex(tmphex), base=16) <= int(hex(255), base=16)
-			if not isvalidhex:
+			is_valid_hex = is_valid_hex and int(hex(0), base=16) <= int(hex(tmphex), base=16) <= int(hex(255), base=16)
+			if not is_valid_hex:
 				break
 
-		if not (isvalidnumeric or isvalidhex):
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert is_valid_numeric or is_valid_hex, "uid is not a valid decimal or hexadecimal uid string, uid: %r" % uid
 
-		if isvalidnumeric:
+		if is_valid_numeric:
 			self.__uid = (hex(int(strlst[0], base=10)), hex(int(strlst[1], base=10)), hex(int(strlst[2], base=10)),
 						  hex(int(strlst[3], base=10)))
 		else:
@@ -67,14 +63,14 @@ class RFIDCard:
 		return self.__active
 
 	def set_active(self, active):
-		if not type(active) is bool:
-			# TODO - Write a fatal error to the log and throw an exception
-			return
+		assert type(active) is bool, "active is not bool type, it is %r" % type(active)
 		self.__active = active
 		return
 
 	def __str__(self):
-		string = str(int(self.__uid[0],base=16)) + "-" + str(int(self.__uid[1],base=16)) + "-" + str(int(self.__uid[2],base=16)) + "-" + str(int(self.__uid[3],base=16))
+		string = str(int(self.__uid[0], base=16)) + "-" + str(
+			int(self.__uid[1], base=16)) + "-" + str(int(self.__uid[2], base=16)) + "-" + str(
+			int(self.__uid[3], base=16))
 
 		if self.__name is not None:
 			string += ", " + self.__name
