@@ -19,12 +19,12 @@ class SystemLog:
 
 	def __init__(self, message, rowid=None, card=None, time_stamp=time.gmtime(),
 				 message_type=MessageTypes.Information, severity=0):
-		self.set_rowid(rowid=rowid)
-		self.set_card(card=card)
-		self.set_time_stamp(time_stamp=time_stamp)
-		self.set_message_type(message_type=message_type)
-		self.set_severity(severity=severity)
-		self.set_message(message=message)
+		self.__set_rowid(rowid=rowid)
+		self.__set_card(card=card)
+		self.__set_time_stamp(time_stamp=time_stamp)
+		self.__set_message_type(message_type=message_type)
+		self.__set_severity(severity=severity)
+		self.__set_message(message=message)
 
 	def __del__(self):
 		del self.__card
@@ -33,7 +33,7 @@ class SystemLog:
 	def get_rowid(self):
 		return self.__rowid
 
-	def set_rowid(self, rowid):
+	def __set_rowid(self, rowid):
 		assert rowid is None or type(rowid) is int, "rowid is neither an integer nor None, it is : %r" % type(rowid)
 		self.__rowid = rowid
 		return
@@ -41,7 +41,7 @@ class SystemLog:
 	def get_card(self):
 		return self.__card
 
-	def set_card(self, card):
+	def __set_card(self, card):
 		assert card is None or type(card) is RFIDCard, "card is neither an RFIDCard nor None, it is : %r" % type(card)
 		self.__card = card
 		return
@@ -49,7 +49,7 @@ class SystemLog:
 	def get_time_stamp(self):
 		return self.__timestamp
 
-	def set_time_stamp(self, time_stamp):
+	def __set_time_stamp(self, time_stamp):
 		assert type(time_stamp) is time.struct_time or type(time_stamp) is float or type(
 			time_stamp) is int, "time_stamp is neither an time.struct_time nor int or float, it is : %r" % type(
 			time_stamp)
@@ -63,7 +63,7 @@ class SystemLog:
 	def get_message_type(self):
 		return self.get_message_type()
 
-	def set_message_type(self, message_type):
+	def __set_message_type(self, message_type):
 		assert type(message_type) is type(MessageTypes), "message_type is not an MessageTypes, it is : %r" % type(
 			message_type)
 		self.__type = message_type
@@ -72,7 +72,7 @@ class SystemLog:
 	def get_severity(self):
 		return self.__severity
 
-	def set_severity(self, severity):
+	def __set_severity(self, severity):
 		assert type(severity) is int, "severity is not an int, it is : %r" % type(severity)
 		self.__severity = severity
 		return
@@ -80,7 +80,7 @@ class SystemLog:
 	def get_message(self):
 		return self.__msg
 
-	def set_message(self, message):
+	def __set_message(self, message):
 		assert type(message) is str, "message is not an str, it is : %r" % type(message)
 		self.__msg = message
 		return
