@@ -1,3 +1,6 @@
+from typing import Tuple, Union
+
+
 class RFIDCard:
 	__uid = None
 	__name = None
@@ -78,3 +81,41 @@ class RFIDCard:
 
 	def __repr__(self):
 		return self.__str__()
+
+	@staticmethod
+	def check_uid(uid: str) -> Tuple[bool, Union[str, None]]:
+		if type(uid) is not str:
+			return False
+
+		strlst = uid.split("-")
+		if len(strlst) != 4:
+			return False
+
+		is_valid_numeric: bool = True
+		is_valid_hex: bool = True
+
+		for x in strlst:
+			is_valid_numeric = is_valid_numeric and x.isnumeric() and 0 <= int(x) <= 255
+			if not is_valid_numeric:
+				break
+
+		for x in strlst:
+			try:
+				tmphex = int(x, base=16)
+			except Exception as e:
+				is_valid_hex = False
+				break
+			is_valid_hex = is_valid_hex and int(hex(0), base=16) <= int(hex(tmphex), base=16) <= int(hex(255), base=16)
+			if not is_valid_hex:
+				break
+
+		if not (is_valid_numeric or is_valid_hex):
+			return False
+
+		if is_valid_numeric:
+			return_string = strlst[0] + "-" + strlst[1] + "-" + strlst[2] + "-" + strlst[3]
+		else:
+			return_string = str(int(strlst[0], base=16)) + "-" + str(int(strlst[0], base=16)) + "-" + str(
+				int(strlst[0], base=16)) + "-" + str(int(strlst[0], base=16))
+
+		return is_valid_numeric or is_valid_hex, return_string
