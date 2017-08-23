@@ -5,7 +5,7 @@ from typing import Union
 
 
 class FeedingLog:
-	__feeding_id: uuid.UUID = None  # Line id, uuid.UUID
+	__feeding_id: str = None  # Line id
 	__card: RFIDCard = None  # Card class object
 	__open_time: time.struct_time = None  # type: time.struct_time
 	__close_time: time.struct_time = None  # type: time.struct_time
@@ -15,7 +15,7 @@ class FeedingLog:
 
 	def __init__(self, card: RFIDCard, open_time: time.struct_time, close_time: time.struct_time,
 			start_weight: Union[int, float], end_weight: Union[int, float],
-			feeding_id: Union[uuid.UUID, str] = uuid.uuid4(), synced: bool = False) -> None:
+			feeding_id: str = uuid.uuid4().hex, synced: bool = False) -> None:
 		self.__set_card(card=card)
 		self.__set_open_time(open_time=open_time)
 		self.__set_close_time(close_time=close_time)
@@ -30,20 +30,13 @@ class FeedingLog:
 		del self.__open_time
 		del self.__close_time
 
-	def get_id(self, obj: bool = False) -> Union[uuid.UUID, int]:
-		if not obj:
-			return self.__feeding_id.int
-		else:
-			return self.__feeding_id
+	def get_id(self) -> Union[uuid.UUID, int]:
+		return self.__feeding_id
 
-	def __set_id(self, feeding_id: uuid.UUID) -> None:
-		assert type(feeding_id) is uuid.UUID or type(feeding_id) is str, "id is neither a UUID or str, it is %r" % type(
-				feeding_id)
-		if type(feeding_id) is uuid.UUID:
-			self.__feeding_id = uuid.UUID(feeding_id.hex)
-			return
+	def __set_id(self, feeding_id: str) -> None:
+		assert type(feeding_id) is str, "id is not an str, it is %r" % type(feeding_id)
 		try:
-			self.__feeding_id = uuid.UUID(feeding_id)
+			self.__feeding_id = uuid.UUID(feeding_id).hex
 		except Exception as e:
 			raise e
 		return
@@ -111,7 +104,7 @@ class FeedingLog:
 		return
 
 	def __str__(self):
-		string = "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}".format(self.__feeding_id.hex,
+		string = "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}".format(self.__feeding_id,
 				time.asctime(self.__open_time), time.asctime(self.__close_time), self.__start_weight, self.__end_weight,
 				self.__synced, self.__card.get_uid(), self.__card.get_name(), self.__card.get_active())
 		return string
