@@ -12,13 +12,13 @@ class MessageTypes(Enum):
 
 class SystemLog:
 	__rowid: Union[int, None] = None
-	__card: Union[RFIDCard, None] = None  # type: RFIDCard
+	__card_uid: Union[str, None] = None  # type: Union[str, None]
 	__timestamp: Union[time.struct_time, None] = None  # type: time.struct_time
 	__msg_type: MessageTypes = None  # type: MessageTypes
 	__severity: int = None  # type: int
 	__msg: str = None  # type: str
 
-	def __init__(self, message: str, rowid: Union[int, None] = None, card: Union[RFIDCard, None] = None,
+	def __init__(self, message: str, rowid: Union[int, None] = None, card: Union[str, None] = None,
 			time_stamp: Union[time.struct_time, int, float] = time.gmtime(),
 			message_type: MessageTypes = MessageTypes.Information, severity: int = 0) -> None:
 		self.__set_rowid(rowid=rowid)
@@ -29,7 +29,7 @@ class SystemLog:
 		self.__set_message(message=message)
 
 	def __del__(self):
-		del self.__card
+		del self.__card_uid
 		del self.__timestamp
 
 	def get_rowid(self) -> Union[int, None]:
@@ -40,12 +40,12 @@ class SystemLog:
 		self.__rowid = rowid
 		return
 
-	def get_card(self) -> Union[RFIDCard, None]:
-		return self.__card
+	def get_card(self) -> Union[str, None]:
+		return self.__card_uid
 
-	def __set_card(self, card: Union[RFIDCard, None]) -> None:
-		assert card is None or type(card) is RFIDCard, "card is neither an RFIDCard nor None, it is : %r" % type(card)
-		self.__card = card
+	def __set_card(self, card: Union[str, None]) -> None:
+		assert card is None or type(card) is str, "card is neither an str nor None, it is : %r" % type(card)
+		self.__card_uid = card
 		return
 
 	def get_time_stamp(self) -> time.struct_time:
@@ -88,7 +88,7 @@ class SystemLog:
 		return
 
 	def __str__(self):
-		string = "{0}, {1}, {2}, {3}, {4}, {5}".format(self.__rowid, self.__card.get_uid(),
+		string = "{0}, {1}, {2}, {3}, {4}, {5}".format(self.__rowid, self.__card_uid.get_uid(),
 				time.asctime(self.__timestamp), self.__msg, self.__msg_type.name, self.__severity)
 		return string
 
