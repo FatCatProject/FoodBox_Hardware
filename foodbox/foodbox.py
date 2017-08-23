@@ -6,7 +6,8 @@ from Hardware import MFRC522
 from Hardware import RFIDCard
 from typing import Union, Tuple
 from foodbox.system_settings import SystemSettings
-from foodbox import SystemLog, FeedingLog
+from foodbox.system_log import SystemLog
+from foodbox.feeding_log import FeedingLog
 from foodbox.system_log import MessageTypes
 import socket
 import uuid
