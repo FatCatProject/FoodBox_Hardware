@@ -9,7 +9,7 @@ from Hardware.MFRC522.rfid_card import RFIDCard
 from DB.createDB import create_foodboxDB
 from foodbox.system_settings import SystemSettings
 from foodbox.feeding_log import FeedingLog
-from typing import Union
+from typing import Union, Tuple
 
 
 class FoodBoxDB:
@@ -28,9 +28,9 @@ class FoodBoxDB:
 
 	### Start Card functiones ###
 	def get_card_byID(self, cardID: str):
-		self.c.execute('SELECT * FROM cards WHERE card_id = ?',(cardID,))
+		self.c.execute('SELECT * FROM cards WHERE card_id = ?', (cardID,))
 		cardData = self.c.fetchall()
-		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1]==1)
+		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
 		return card
 
 	def get_all_cards(self):
@@ -181,19 +181,17 @@ class FoodBoxDB:
 
 		### Start feeding_logs functiones ###
 
-	def get_all_feeding_logs(self):
+	def get_feeding_log_by_id(self, logID: str):
 		"""
-		Returns a tuple of all feeding logs , the card are objects inside the tuple
+		Function gets a feeding_log ID and returns a feeding_log OBJECT
 		"""
-		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id')
+		self.c.execute('SELECT * FROM feeding_logs WHERE feeding_id = ?', (logID,))
 		logData = self.c.fetchall()
-		#print(logData)
-		logs = []
-		for row in logData:
-			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
-			log = FeedingLog(thisCard, row[2], row[3], row[4], row[5], feeding_id=row[0], synced=False)
-			logs.append(log)
-		return tuple(logs)
+		card = self.get_card_byID(str(logData[0][1]))
+		myLog = FeedingLog(card, open_time=logData[0][2], close_time=logData[0][3], start_weight=logData[0][4],
+						   end_weight=logData[0][5],
+						   feeding_id=logData[0][0], synced=(logData[0][6] == 1))
+		return myLog
 
 	def add_feeding_log(self, myLog: FeedingLog):
 		"""
@@ -206,9 +204,23 @@ class FoodBoxDB:
 			 time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
 		self.conn.commit()
 
+	def get_all_feeding_logs(self):
+		"""
+		Returns a tuple of all feeding logs , the cards are objects inside the tuple
+		"""
+		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id')
+		logData = self.c.fetchall()
+		logs = []
+		for row in logData:
+			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
+			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
+							 feeding_id=row[0], synced=(row[6] == 1))
+			logs.append(log)
+		return tuple(logs)
+
 	def get_synced_feeding_logs(self):
 		"""
-		Returns a tuple of synced feeding logs , the card are objects inside the tuple
+		Returns a tuple of synced feeding logs , the cards are objects inside the tuple
 		"""
 		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE synced=1')
 		logData = self.c.fetchall()
@@ -216,12 +228,42 @@ class FoodBoxDB:
 		logs = []
 		for row in logData:
 			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
-			log = FeedingLog(thisCard, row[2], row[3], row[4], row[5], feeding_id=row[0], synced=False)
+			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
+							 feeding_id=row[0], synced=(row[6] == 1))
 			logs.append(log)
 		return tuple(logs)
 
+	def get_not_synced_feeding_logs(self):
+		"""
+		Returns a tuple of synced feeding logs , the cards are objects inside the tuple
+		"""
+		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE synced=0')
+		logData = self.c.fetchall()
+		# print(logData)
+		logs = []
+		for row in logData:
+			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
+			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
+							 feeding_id=row[0], synced=(row[6] == 1))
+			logs.append(log)
+		return tuple(logs)
 
-### END offeeding_logs functiones ###
+	def delete_synced_feeding_logs(self):
+		"""
+		Delete all synced feeding_logs from the DB
+		"""
+		self.c.execute('DELETE FROM feeding_logs WHERE synced = 1')
+		self.conn.commit()
+
+	def set_feeding_log_synced(self, myLog: FeedingLog):
+		"""
+		Get feeding_log OBJECT and change the synced status to True = 1
+		"""
+		self.c.execute('UPDATE feeding_logs SET synced = 1 WHERE feeding_id = ?', (myLog.get_id(),))
+		self.conn.commit()
+
+
+### END of feeding_logs functiones ###
 
 ### system_logs functiones ###
 ### END of system_logs functiones ###
@@ -231,8 +273,8 @@ Printings and tests
 fbdb = FoodBoxDB()
 card = fbdb.get_card_byID('138-236-209-167')
 fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '2d49780476064471b0f1dafe459195e2', True)
-#print(fLog)
-#fbdb.add_feeding_log(fLog)
+# print(fLog)
+# fbdb.add_feeding_log(fLog)
 
 
 # print(fbdb.get_all_cards())
@@ -243,14 +285,21 @@ fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '2d49780476064471b0f1daf
 # fbdb.add_card('222-222-222-222')
 # fbdb.delete_card('222-222-222-222')
 # print(fbdb.get_all_cards())
-#print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
-#fbdb.set_system_setting(SystemSettings.FoodBox_Name, 'Elf')
+# print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
+# fbdb.set_system_setting(SystemSettings.FoodBox_Name, 'Elf')
 # print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
 
+# fbdb.set_state_from_object(card)
+
+# print(fbdb.get_all_feeding_logs())
+# print(fbdb.get_synced_feeding_logs())
+# print(fbdb.get_not_synced_feeding_logs())
+# fbdb.delete_synced_feeding_logs()
 
 
-#fbdb.set_state_from_object(card)
 
+# fbdb.set_feeding_log_synced()
 
+myLog = fbdb.get_feeding_log_by_id('d3e815b9a34742e39002a648c39da02e')
+fbdb.set_feeding_log_synced(myLog)
 
-print(fbdb.get_all_feeding_logs())
