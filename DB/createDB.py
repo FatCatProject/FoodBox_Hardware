@@ -14,9 +14,11 @@ def create_foodboxDB():
 		pass
 	finally:
 		# TODO logic
-		print('Eror creating DB')
+		pass
+	# print('Error creating DB')
 
 	c = conn.cursor()
+	c.execute("PRAGMA foreign_keys = ON")
 	c.execute('CREATE TABLE IF NOT EXISTS system_settings('
 			  'key_name TEXT NOT NULL , '
 			  'value_text TEXT, '
@@ -32,12 +34,12 @@ def create_foodboxDB():
 			  'FOREIGN KEY(`message_type`) REFERENCES `message_types` );')
 
 	c.execute('CREATE TABLE IF NOT EXISTS feeding_logs('
-			  'feeding_id INTEGER NOT NULL ,'
+			  'feeding_id TEXT NOT NULL ,'
 			  'card_id TEXT NOT NULL,'
-			  'open_time TEXT NOT NULL,'
-			  'close_time TEXT NOT NULL,'
-			  'starting_weight NUMERIC NOT NULL,'
-			  'ending_weight NUMERIC NOT NULL,'
+			  'open_time NUMERIC NOT NULL,'
+			  'close_time NUMERIC NOT NULL,'
+			  'start_weight NUMERIC NOT NULL,'
+			  'end_weight NUMERIC NOT NULL,'
 			  'synced INTEGER NOT NULL,'
 			  'PRIMARY KEY(`feeding_id`), '
 			  'FOREIGN KEY(`card_id`) REFERENCES `cards` );')
@@ -45,6 +47,7 @@ def create_foodboxDB():
 	c.execute('CREATE TABLE IF NOT EXISTS cards('
 			  '`card_id` TEXT NOT NULL , '
 			  '`active` INTEGER NOT NULL,'
+			  '`card_name` TEXT, '
 			  'PRIMARY KEY(`card_id`) );')
 
 	conn.commit()
