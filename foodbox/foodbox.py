@@ -11,11 +11,12 @@ from foodbox.feeding_log import FeedingLog
 from foodbox.system_log import MessageTypes
 import socket
 import uuid
+from DB.foodboxDB import FoodBoxDB
 
 
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
-	__cn = None  # TODO - Add DB connection (Waiting for DAL class to be written)
+	__cn: FoodBoxDB = None  # Database connection
 	__proximity: LM393 = None  # LM393 proximity sensor
 	__rfid_scanner: MFRC522 = None  # MFRC522 RFID reader
 	__scale: HX711 = None  # HX711 + load cell
@@ -53,7 +54,7 @@ class FoodBox:
 		self.__presentation_mode = presentation_mode
 
 		self.__buzzer = None  # TODO
-		self.__cn = None  # TODO
+		self.__cn = None  # TODO - Do we need this?
 		self.__proximity = LM393(pin_num=17)
 		self.__rfid_scanner = MFRC522(dev='/dev/spidev0.0', spd=1000000, SDA=8, SCK=11, MOSI=10, MISO=9, RST=25)
 		self.__scale = HX711(dout=4, pd_sck=18, gain=128, readBits=24, offset=self.__scale_offset,
@@ -93,9 +94,12 @@ class FoodBox:
 		:rtype value: String
 		:rtype from_db: Boolean
 		"""
-		# TODO
-		value = None
-		from_db = False
+
+		cn: FoodBoxDB = FoodBoxDB()
+		value = cn.get_system_setting(setting=setting)
+		from_db = value is not None
+		del cn
+
 		return value, from_db
 
 	def __set_system_setting(self, setting: SystemSettings, value: Union[str, int, float, None]) -> bool:
@@ -108,8 +112,11 @@ class FoodBox:
 		:return success: Was the setting set successfully or not.
 		:rtype success: Boolean
 		"""
-		# TODO
-		success = False
+		cn: FoodBoxDB = FoodBoxDB()
+		cn.set_system_setting(setting=setting, value=value)
+		del cn
+
+		success = True
 		return success
 
 	def write_system_log(self, log: SystemLog) -> bool:
@@ -117,17 +124,22 @@ class FoodBox:
 		return False
 
 	def write_feeding_log(self, log: FeedingLog) -> bool:
-		# TODO
-		return False
+		cn: FoodBoxDB = FoodBoxDB()
+		cn.add_feeding_log(myLog=log)
+		del cn
+		return True
 
 	def mark_feeding_logs_synced(self, uids: Tuple[str]) -> bool:
+		cn: FoodBoxDB = FoodBoxDB()
 		for uid in uids:
-			# TODO - mark as synced
-			pass
-		return False
+			cn.set_feeding_log_synced(uid)
+		del cn
+		return True
 
 	def delete_synced_feeding_logs(self) -> bool:
-		# TODO
+		cn: FoodBoxDB = FoodBoxDB()
+		cn.delete_synced_feeding_logs()
+		del cn
 		return False
 
 	def sync_with_brainbox(self) -> bool:
@@ -161,7 +173,9 @@ class FoodBox:
 				time.sleep(0.1)
 				continue
 
-			card: RFIDCard = None  # TODO - Get card from database
+			cn: FoodBoxDB = FoodBoxDB()
+			card: RFIDCard = cn.get_card_byID()  # or None
+			del cn
 			if card is None or not card.get_active():
 				logstr = "Invalid card tried to open box."
 				logtype = MessageTypes.Information
@@ -184,7 +198,7 @@ class FoodBox:
 			self.write_system_log(syslog)
 			open_time = time.localtime()
 			start_weight = self.__scale.get_units()
-			self.__stepper.quarter_rotation_forward()
+			self.__stepper.quarter_rotation_forward()  # TODO - replace with a function
 			if card.get_name() == "ADMIN":
 				while self.__rfid_scanner.get_uid() == carduid:
 					time.sleep(5)
@@ -199,7 +213,7 @@ class FoodBox:
 					self.write_system_log(syslog)
 				# TODO - Beep at the cat
 
-			self.__stepper.quarter_rotation_backward()
+			self.__stepper.quarter_rotation_backward()  # TODO - replace with a function
 			close_time = time.localtime()
 			end_weight = self.__scale.get_units()
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
