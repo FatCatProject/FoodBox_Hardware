@@ -32,7 +32,7 @@ class FoodBox:
 	__sync_interval: int = None  # Interval between pooling BrainBox
 	__sync_last: time.struct_time = None  # When was last successful communication with BrainBox
 	__presentation_mode: bool = False
-
+	__lid_open = False
 	# End of settings section
 
 	def __init__(self, presentation_mode: bool = False) -> None:
@@ -198,7 +198,8 @@ class FoodBox:
 			self.write_system_log(syslog)
 			open_time = time.localtime()
 			start_weight = self.__scale.get_units()
-			self.__stepper.quarter_rotation_forward()  # TODO - replace with a function
+			self.open_lid()
+			time.sleep(5)
 			if card.get_name() == "ADMIN":
 				while self.__rfid_scanner.get_uid() == carduid:
 					time.sleep(5)
@@ -213,7 +214,7 @@ class FoodBox:
 					self.write_system_log(syslog)
 				# TODO - Beep at the cat
 
-			self.__stepper.quarter_rotation_backward()  # TODO - replace with a function
+			self.close_lid()
 			close_time = time.localtime()
 			end_weight = self.__scale.get_units()
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
@@ -223,3 +224,17 @@ class FoodBox:
 			if False:  # Ignore me.
 				break
 		return False
+
+	def open_lid(self) -> bool:
+		if self.__lid_open:
+			return True
+		self.__stepper.quarter_rotation_forward()
+		self.__lid_open = True
+		return True
+
+	def close_lid(self):
+		if not self.__lid_open:
+			return True
+		self.__stepper.quarter_rotation_backward()
+		self.__lid_open = False
+		return True
