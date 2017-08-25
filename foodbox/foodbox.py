@@ -4,7 +4,7 @@ from Hardware import ULN2003
 from Hardware import HX711
 from Hardware import MFRC522
 from Hardware import RFIDCard
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 from foodbox.system_settings import SystemSettings
 from foodbox.system_log import SystemLog
 from foodbox.feeding_log import FeedingLog
@@ -33,6 +33,7 @@ class FoodBox:
 	__sync_last: time.struct_time = None  # When was last successful communication with BrainBox
 	__presentation_mode: bool = False
 	__lid_open = False
+
 	# End of settings section
 
 	def __init__(self, presentation_mode: bool = False) -> None:
@@ -120,16 +121,34 @@ class FoodBox:
 		return success
 
 	def write_system_log(self, log: SystemLog) -> bool:
+		"""Writes a system log to the database.
+
+		:arg log: The system log to write.
+		:type log: SystemLog
+		:rtype: bool
+		"""
 		# TODO
 		return False
 
 	def write_feeding_log(self, log: FeedingLog) -> bool:
+		"""Writes a feeding log to the database.
+
+		:arg log: The feeding log to write.
+		:type log: FeedingLog
+		:rtype: bool
+		"""
 		cn: FoodBoxDB = FoodBoxDB()
 		cn.add_feeding_log(myLog=log)
 		del cn
 		return True
 
 	def mark_feeding_logs_synced(self, uids: Tuple[str]) -> bool:
+		"""Marks FeedingLogs as synced to brainbox.
+
+		:arg uids: A Tuple[str] of IDs to mark
+		:type uids: Tuple[str]
+		:rtype: bool
+		"""
 		cn: FoodBoxDB = FoodBoxDB()
 		for uid in uids:
 			cn.set_feeding_log_synced(uid)
@@ -137,26 +156,50 @@ class FoodBox:
 		return True
 
 	def delete_synced_feeding_logs(self) -> bool:
+		"""Delete FeedingLogs that were already synced to the brainbox.
+
+		:rtype: bool
+		"""
 		cn: FoodBoxDB = FoodBoxDB()
 		cn.delete_synced_feeding_logs()
 		del cn
 		return False
 
-	def sync_with_brainbox(self) -> bool:
+	def sync_with_brainbox(self) -> Tuple[Tuple[str], bool]:
+		"""Sync unsynced FeedingLogs with the brainbox.
+
+		:return synced_uid: A Tuple[str] of uids that were synced, or failed to sync.
+		:return success: Did it sync successfully or not.
+		:rtype synced_uid: Tuple[str]
+		:rtype success: bool
+		"""
+
+		cn: FoodBoxDB = FoodBoxDB()
+		uid_to_sync: List[FeedingLog] = cn.get_not_synced_feeding_logs()
+		del cn
+		synced_uid: Tuple[str] = Tuple([log.get_id() for log in uid_to_sync])
+
 		if self.__brainbox_ip_address is None:
 			self.__brainbox_ip_address = self.__scan_for_brainbox()
 			if self.__brainbox_ip_address is not None:
 				self.__set_system_setting(SystemSettings.BrainBox_IP, self.__brainbox_ip_address)
 			else:
-				return False
+				return synced_uid, False
 
-		# TODO
-		return False
+		success: bool = False
+		# TODO - Sync with brainbox
+		return synced_uid, success
 
 	def start_mainloop(self) -> bool:
+		"""The main loop of reading card, checking access and writing logs.
+
+		:rtype: bool
+		"""
 		while True:
 			if time.time() - time.mktime(self.__sync_last) >= self.__sync_interval:
-				if self.sync_with_brainbox():
+
+				sync_uid, sync_success = self.sync_with_brainbox()
+				if sync_success:
 					logstr = "Sync with brainbox succeeded."
 					logtype = MessageTypes.Information
 					logsev = 0
@@ -167,6 +210,34 @@ class FoodBox:
 				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 				self.write_system_log(syslog)
 				self.__sync_last = time.localtime()
+
+				if sync_success:
+					if self.mark_feeding_logs_synced(uids=sync_uid):
+						logstr = "FeedingLogs marked synced successfully."
+						logtype = MessageTypes.Information
+						logsev = 0
+						deleted_logs = True
+					else:
+						logstr = "Failed to mark FeedingLogs synced."
+						logtype = MessageTypes.Error
+						logsev = 1
+						deleted_logs = False
+					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
+							severity=logsev)
+					self.write_system_log(syslog)
+
+					if deleted_logs:
+						if self.delete_synced_feeding_logs():
+							logstr = "FeedingLogs marked synced were deleted successfully."
+							logtype = MessageTypes.Information
+							logsev = 0
+						else:
+							logstr = "Failed to delete FeedingLogs marked as synced."
+							logtype = MessageTypes.Error
+							logsev = 1
+						syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
+								severity=logsev)
+						self.write_system_log(syslog)
 
 			carduid = self.__rfid_scanner.get_uid()
 			if carduid is None:  # TODO - Check what carduid looks like
