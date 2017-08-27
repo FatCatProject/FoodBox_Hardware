@@ -32,11 +32,12 @@ class FoodBox:
 	__sync_interval: int = None  # Interval between pooling BrainBox
 	__sync_last: time.struct_time = None  # When was last successful communication with BrainBox
 	__presentation_mode: bool = False
+	__sync_on_change: bool = False  # Should sync with the BrainBox on every FeedingLog?
 	__lid_open = False
 
 	# End of settings section
 
-	def __init__(self, presentation_mode: bool = False) -> None:
+	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False) -> None:
 		self.__scale_offset = self.__get_system_setting(SystemSettings.Scale_Offset) or -96096
 		self.__scale = self.__get_system_setting(SystemSettings.Scale_Scale) or 925
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
@@ -66,6 +67,7 @@ class FoodBox:
 		if not self.__presentation_mode:
 			self.__stepper.quarter_rotation_forward()
 			self.__stepper.quarter_rotation_backward()
+		self.__sync_on_change = sync_on_change
 
 	def __del__(self):
 		del self.__buzzer
@@ -240,7 +242,7 @@ class FoodBox:
 						self.write_system_log(syslog)
 
 			carduid = self.__rfid_scanner.get_uid()
-			if carduid is None:  # TODO - Check what carduid looks like
+			if carduid is None:
 				time.sleep(0.1)
 				continue
 
@@ -291,6 +293,19 @@ class FoodBox:
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
 					end_weight=end_weight)
 			self.write_feeding_log(feedinglog)
+			if self.__sync_on_change:
+				sync_uid, sync_success = self.sync_with_brainbox()
+				if sync_success:
+					logstr = "Sync with brainbox succeeded."
+					logtype = MessageTypes.Information
+					logsev = 0
+				else:
+					logstr = "Sync with brainbox failed."
+					logtype = MessageTypes.Error
+					logsev = 1
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
+				self.__sync_last = time.localtime()
 
 			if False:  # Ignore me.
 				break
