@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 
 class RFIDCard:
-	__uid: str = None
+	__uid: str = None  # The uid is in a format of 255-255-255-255-255, where each section is in a range of 000-255.
 	__name: Union[str, None] = None
 	__active: bool = False
 

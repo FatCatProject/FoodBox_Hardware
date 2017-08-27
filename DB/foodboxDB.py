@@ -255,11 +255,11 @@ class FoodBoxDB:
 		self.c.execute('DELETE FROM feeding_logs WHERE synced = 1')
 		self.conn.commit()
 
-	def set_feeding_log_synced(self, myLog: FeedingLog):
+	def set_feeding_log_synced(self, myLogUID: str):
 		"""
 		Get feeding_log OBJECT and change the synced status to True = 1
 		"""
-		self.c.execute('UPDATE feeding_logs SET synced = 1 WHERE feeding_id = ?', (myLog.get_id(),))
+		self.c.execute('UPDATE feeding_logs SET synced = 1 WHERE feeding_id = ?', (myLogUID,))
 		self.conn.commit()
 
 
@@ -270,9 +270,9 @@ class FoodBoxDB:
 """
 Printings and tests
 """
-fbdb = FoodBoxDB()
-card = fbdb.get_card_byID('138-236-209-167')
-fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '2d49780476064471b0f1dafe459195e2', True)
+# fbdb = FoodBoxDB()
+# card = fbdb.get_card_byID('138-236-209-167')
+# fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '2d49780476064471b0f1dafe459195e2', True)
 # print(fLog)
 # fbdb.add_feeding_log(fLog)
 
@@ -300,6 +300,6 @@ fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '2d49780476064471b0f1daf
 
 # fbdb.set_feeding_log_synced()
 
-myLog = fbdb.get_feeding_log_by_id('d3e815b9a34742e39002a648c39da02e')
-fbdb.set_feeding_log_synced(myLog)
+# myLog = fbdb.get_feeding_log_by_id('d3e815b9a34742e39002a648c39da02e')
+# fbdb.set_feeding_log_synced(myLog)
 
