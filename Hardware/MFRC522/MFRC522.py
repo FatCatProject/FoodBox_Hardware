@@ -415,10 +415,13 @@ class MFRC522:
 		self.Write_MFRC522(self.ModeReg, 0x3D)
 		self.AntennaOn()
 
-	def get_uid(self):
+	def get_uid(self, get_tuple=False):
 		(status, TagType) = self.MFRC522_Request(self.PICC_REQIDL)
 		(status, uid) = self.MFRC522_Anticoll()
 		if status == self.MI_OK:
-			return uid
+			if get_tuple:
+				return uid
+			else:
+				return "{0:03}-{1:03}-{2:03}-{3:03}-{4:03}".format(uid[0], uid[1], uid[2], uid[3], uid[4])
 		else:
 			return None
