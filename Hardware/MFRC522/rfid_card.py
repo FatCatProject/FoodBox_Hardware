@@ -59,7 +59,7 @@ class RFIDCard:
 			return False, None
 
 		strlst = uid.split("-")
-		if len(strlst) != 4:
+		if len(strlst) != 5: #changed from 4 to 5
 			return False, None
 
 		is_valid_numeric: bool = True
@@ -84,9 +84,9 @@ class RFIDCard:
 			return False, None
 
 		if is_valid_numeric:
-			return_string = strlst[0] + "-" + strlst[1] + "-" + strlst[2] + "-" + strlst[3]
+			return_string = strlst[0] + "-" + strlst[1] + "-" + strlst[2] + "-" + strlst[3] + "-" + strlst[4]
 		else:
 			return_string = str(int(strlst[0], base=16)) + "-" + str(int(strlst[0], base=16)) + "-" + str(
-					int(strlst[0], base=16)) + "-" + str(int(strlst[0], base=16))
+					int(strlst[0], base=16)) + "-" + str(int(strlst[0], base=16))+ "-" + str(int(strlst[0], base=16))
 
 		return is_valid_numeric or is_valid_hex, return_string
