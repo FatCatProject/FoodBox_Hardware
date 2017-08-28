@@ -11,7 +11,7 @@ from foodbox.system_settings import SystemSettings
 from foodbox.feeding_log import FeedingLog
 from foodbox.system_log import SystemLog
 from foodbox.system_log import MessageTypes
-from typing import Union, Tuple
+
 
 
 class FoodBoxDB:
@@ -110,13 +110,14 @@ class FoodBoxDB:
 		newState = mycard.get_active()
 		self.set_state(cardID, newState)
 
-	def set_state(self, cardID, newState: Union[str, bool]):
+	def set_state(self, cardID, newState):
 		"""
 		Function gets cardID number and a state to set it to = Active or Not active
 		Value can be 0/1 or true/false or True/False
 		check if newState is boolean and change to True=1 or False=0
 		If the card doesn't exist - Adding new card and setting the newState as requested
 		"""
+		assert type(newState) is str or type(newState) is bool, "Wrong type"
 		exists, state = self.card_state(cardID)
 		if newState == 1 or newState == 0:
 			setNewState = newState
@@ -262,7 +263,7 @@ class FoodBoxDB:
 
 
 ### END of feeding_logs functiones ###
-	def get_system_log_by_id(self, logID: int) -> Union[SystemLog, None]:
+	def get_system_log_by_id(self, logID: int):
 		"""Function gets a SystemLog ID and returns a SystemLog object or None if no such object
 		:arg logID: SystemLog ID
 		:type logID: int
@@ -278,7 +279,7 @@ class FoodBoxDB:
 			return ret_log
 
 		rowid = data[0]  # type: int
-		card_id = data[1]  # type: Union[str, None]
+		card_id = data[1]  # type: str
 		time_stamp = int(data[2])  # type: int
 		msg = data[3]  # type: str
 		msg_type = MessageTypes[data[4]]  # type: MessageTypes
@@ -287,7 +288,7 @@ class FoodBoxDB:
 			severity=severity)
 		return ret_log
 
-	def add_system_log(self, myLog: SystemLog) -> Union[None, int]:
+	def add_system_log(self, myLog: SystemLog):
 		"""Function gets a SystemLog object and writes it to the database
 
 		:arg myLog: The SystemLog to write to the database
@@ -295,7 +296,7 @@ class FoodBoxDB:
 		:return log_rowid: rowid if log was written successfully or None if not
 		:rtype log_rowid: Union[int, None]
 		"""
-		log_rowid = None  # type: Union[int, None]
+		log_rowid = None  # type: int
 		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES({0}, '
 					   '{1}, {2}, {3}, {4}, {5})'.format(myLog.get_card(), time.mktime(myLog.get_time_stamp()),
 			myLog.get_message(), myLog.get_message_type().name, myLog.get_severity()))
@@ -303,7 +304,7 @@ class FoodBoxDB:
 		self.conn.commit()
 		return False
 
-	def get_all_system_logs(self, logs_since: Union[None, time.struct_time] = None) -> Tuple[SystemLog]:
+	def get_all_system_logs(self, logs_since: time.struct_time = None):
 		"""Returns a tuple of all system logs since logs_since, or all of them
 
 		:arg logs_since: Limit logs to a date, if it's None then no limit on date.
@@ -322,7 +323,7 @@ class FoodBoxDB:
 		logs_data = self.c.fetchall()
 		for row in logs_data:
 			rowid = row[0]  # type: int
-			card_id = row[1]  # type: Union[str, None]
+			card_id = row[1]  # type: str
 			time_stamp = int(row[2])  # type: int
 			msg = row[3]  # type: str
 			msg_type = MessageTypes[row[4]]  # type: MessageTypes
@@ -331,7 +332,7 @@ class FoodBoxDB:
 				SystemLog(message=msg, rowid=rowid, card=card_id, time_stamp=time_stamp, message_type=msg_type,
 					severity=severity))
 
-		return Tuple(log_list)
+		return tuple(log_list)
 ### system_logs functions ###
 
 ### END of system_logs functions ###

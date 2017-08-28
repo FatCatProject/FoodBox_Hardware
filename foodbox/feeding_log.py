@@ -1,7 +1,6 @@
 import time
 from Hardware import RFIDCard
 import uuid
-from typing import Union
 
 
 class FeedingLog:
@@ -14,8 +13,10 @@ class FeedingLog:
 	__synced = False  # type: bool
 
 	def __init__(self, card: RFIDCard, open_time: time.struct_time, close_time: time.struct_time,
-			start_weight: Union[int, float], end_weight: Union[int, float],
-			feeding_id: str = uuid.uuid4().hex, synced: bool = False) -> None:
+			start_weight, end_weight,
+			feeding_id: str = uuid.uuid4().hex, synced: bool = False):
+		assert type(start_weight) is int or type(start_weight) is float, "Wrong type"
+		assert type(end_weight) is int or type(end_weight) is float, "Wrong type"
 		self.__set_card(card=card)
 		self.__set_open_time(open_time=open_time)
 		self.__set_close_time(close_time=close_time)
@@ -30,10 +31,10 @@ class FeedingLog:
 		del self.__open_time
 		del self.__close_time
 
-	def get_id(self) -> Union[uuid.UUID, int]:
+	def get_id(self):
 		return self.__feeding_id
 
-	def __set_id(self, feeding_id: str) -> None:
+	def __set_id(self, feeding_id: str):
 		assert type(feeding_id) is str, "id is not an str, it is %r" % type(feeding_id)
 		try:
 			self.__feeding_id = uuid.UUID(feeding_id).hex
@@ -41,18 +42,18 @@ class FeedingLog:
 			raise e
 		return
 
-	def get_card(self) -> RFIDCard:
+	def get_card(self):
 		return self.__card
 
-	def __set_card(self, card: RFIDCard) -> None:
+	def __set_card(self, card: RFIDCard):
 		assert card is None or type(card) is RFIDCard, "card is neither an RFIDCard nor None, it is : %r" % type(card)
 		self.__card = card
 		return
 
-	def get_open_time(self) -> time.struct_time:
+	def get_open_time(self):
 		return self.__open_time
 
-	def __set_open_time(self, open_time: time.struct_time) -> None:
+	def __set_open_time(self, open_time: time.struct_time):
 		assert type(open_time) is time.struct_time or type(open_time) is float or type(
 				open_time) is int, "open_time is neither an time.struct_time nor int or float, it is : %r" % type(
 				open_time)
@@ -62,10 +63,10 @@ class FeedingLog:
 			self.__open_time = time.gmtime(open_time)
 		return
 
-	def get_close_time(self) -> time.struct_time:
+	def get_close_time(self):
 		return self.__close_time
 
-	def __set_close_time(self, close_time: time.struct_time) -> None:
+	def __set_close_time(self, close_time: time.struct_time):
 		assert type(close_time) is time.struct_time or type(close_time) is float or type(
 				close_time) is int, "close_time is neither an time.struct_time nor int or float, it is : %r" % type(
 				close_time)
@@ -75,30 +76,30 @@ class FeedingLog:
 			self.__close_time = time.gmtime(close_time)
 		return
 
-	def get_start_weight(self) -> Union[int, float]:
+	def get_start_weight(self):
 		return self.__start_weight
 
-	def __set_start_weight(self, weight: Union[int, float]) -> None:
+	def __set_start_weight(self, weight):
 		assert type(weight) is float or type(weight) is int, "weight is neither and int or a float, it is an %r" % type(
 				weight)
 		assert weight >= 0, "weight is negative: %r" % weight
 		self.__start_weight = weight
 		return
 
-	def get_end_weight(self) -> Union[int, float]:
+	def get_end_weight(self):
 		return self.__end_weight
 
-	def __set_end_weight(self, weight: Union[int, float]) -> None:
+	def __set_end_weight(self, weight):
 		assert type(weight) is float or type(weight) is int, "weight is neither and int or a float, it is an %r" % type(
 				weight)
 		assert weight >= 0, "weight is negative: %r" % weight
 		self.__end_weight = weight
 		return
 
-	def get_synced(self) -> bool:
+	def get_synced(self):
 		return self.__synced
 
-	def __set_synced(self, synced: bool) -> None:
+	def __set_synced(self, synced: bool):
 		assert type(synced) is bool, "synced is not a bool type, it is: %r" % type(synced)
 		self.__synced = synced
 		return
