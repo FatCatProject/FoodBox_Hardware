@@ -129,7 +129,9 @@ class FoodBox:
 		:type log: SystemLog
 		:rtype: bool
 		"""
-		# TODO
+		cn = FoodBoxDB()  # type: FoodBoxDB
+		cn.add_system_log(myLog=log)
+		del cn
 		return False
 
 	def write_feeding_log(self, log: FeedingLog) -> bool:
