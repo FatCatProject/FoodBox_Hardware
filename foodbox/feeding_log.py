@@ -5,13 +5,13 @@ from typing import Union
 
 
 class FeedingLog:
-	__feeding_id: str = None  # Line id
-	__card: RFIDCard = None  # Card class object
-	__open_time: time.struct_time = None  # type: time.struct_time
-	__close_time: time.struct_time = None  # type: time.struct_time
-	__start_weight: Union[int, float] = None
-	__end_weight: Union[int, float] = None
-	__synced: bool = False
+	__feeding_id = None  # type: str  # Line id
+	__card = None  # type: RFIDCard # Card class object
+	__open_time = None  # type: time.struct_time
+	__close_time = None  # type: time.struct_time
+	__start_weight = None  # type: Union[int, float]
+	__end_weight = None  #type : Union[int, float]
+	__synced = False  # type: bool
 
 	def __init__(self, card: RFIDCard, open_time: time.struct_time, close_time: time.struct_time,
 			start_weight: Union[int, float], end_weight: Union[int, float],

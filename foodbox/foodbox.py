@@ -16,24 +16,24 @@ from DB.foodboxDB import FoodBoxDB
 
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
-	__cn: FoodBoxDB = None  # Database connection
-	__proximity: LM393 = None  # LM393 proximity sensor
-	__rfid_scanner: MFRC522 = None  # MFRC522 RFID reader
-	__scale: HX711 = None  # HX711 + load cell
-	__stepper: ULN2003 = None  # ULN2003 stepper controller
+	__cn = None  # type: FoodBoxDB  # Database connection
+	__proximity = None  # type: LM393  # LM393 proximity sensor
+	__rfid_scanner = None  # type: MFRC522  # MFRC522 RFID reader
+	__scale = None # type: HX711  # HX711 + load cell
+	__stepper = None # type: ULN2003  # ULN2003 stepper controller
 
 	# Settings section
-	__brainbox_ip_address: Union[str, None] = None  # IP address of BrainBox to communicate with
-	__foodbox_id: str = None  # Unique ID for this box
-	__foodbox_name: str = None  # Name of box, defaults to HOSTNAME
-	__max_open_time: int = None  # Max time to keep lid open before buzzer turns on
-	__scale_offset: Union[int, float] = None  # OFFSET for HX711
-	__scale_scale: int = None  # SCALE for HX711
-	__sync_interval: int = None  # Interval between pooling BrainBox
-	__sync_last: time.struct_time = None  # When was last successful communication with BrainBox
-	__presentation_mode: bool = False
-	__sync_on_change: bool = False  # Should sync with the BrainBox on every FeedingLog?
-	__lid_open = False
+	__brainbox_ip_address = None  # type: Union[str, None]  # IP address of BrainBox to communicate with
+	__foodbox_id = None  # type: str  # Unique ID for this box
+	__foodbox_name = None  # type: str  # Name of box, defaults to HOSTNAME
+	__max_open_time = None  # type: int  # Max time to keep lid open before buzzer turns on
+	__scale_offset = None  # type: Union[int, float]  # OFFSET for HX711
+	__scale_scale = None  # type: int  # SCALE for HX711
+	__sync_interval = None  # type: int  # Interval between pooling BrainBox
+	__sync_last = None  # type: time.struct_time  # When was last successful communication with BrainBox
+	__presentation_mode = False  # type: bool
+	__sync_on_change = False  # type: bool  # Should sync with the BrainBox on every FeedingLog?
+	__lid_open = False # type: bool
 
 	# End of settings section
 
