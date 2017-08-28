@@ -275,7 +275,7 @@ fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '06d32ba16ba544d49718c95
 # fbdb.add_feeding_log(fLog)
 #print(fbdb.get_all_cards())
 # print(fbdb.get_active_cards())
-# print(fbdb.get_not_active_cards())
+print(fbdb.get_not_active_cards())
 #print(fbdb.card_state('175-244-217-141-000'))
 #print(fbdb.set_state('138-236-209-167-001', False))
 #fbdb.add_card('222-222-222-222-222')
@@ -289,7 +289,7 @@ fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '06d32ba16ba544d49718c95
 #print(fbdb.get_synced_feeding_logs())
 #print(fbdb.get_not_synced_feeding_logs())
 #fbdb.delete_synced_feeding_logs()
-#myLog = fbdb.get_feeding_log_by_id('b61290112d3140f6969a0983219f7b98')
-#print(myLog)
+myLog = fbdb.get_feeding_log_by_id('b61290112d3140f6969a0983219f7b98')
+print(myLog)
 #fbdb.set_feeding_log_synced(myLog)
 

@@ -2,9 +2,9 @@ from typing import Tuple, Union
 
 
 class RFIDCard:
-	__uid: str = None  # The uid is in a format of 255-255-255-255-255, where each section is in a range of 000-255.
-	__name: Union[str, None] = None
-	__active: bool = False
+	__uid = None  # type: str  # The uid is in a format of 255-(x5), where each section is in a range of 000-255.
+	__name = None  # type: Union[str, None]
+	__active = False  # type: bool
 
 	def __init__(self, uid: str, name: Union[str, None] = None, active: bool = False) -> None:
 		self.__set_uid(uid=uid)
