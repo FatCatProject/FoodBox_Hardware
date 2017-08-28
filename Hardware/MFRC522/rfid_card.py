@@ -62,8 +62,8 @@ class RFIDCard:
 		if len(strlst) != 5: #changed from 4 to 5
 			return False, None
 
-		is_valid_numeric: bool = True
-		is_valid_hex: bool = True
+		is_valid_numeric = True  # type: bool
+		is_valid_hex = True  # type: bool
 
 		for x in strlst:
 			is_valid_numeric = is_valid_numeric and x.isnumeric() and 0 <= int(x) <= 255
