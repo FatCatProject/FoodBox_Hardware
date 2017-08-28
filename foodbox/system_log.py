@@ -11,12 +11,12 @@ class MessageTypes(Enum):
 
 
 class SystemLog:
-	__rowid: Union[int, None] = None
-	__card_uid: Union[str, None] = None  # type: Union[str, None]
-	__timestamp: Union[time.struct_time, None] = None  # type: time.struct_time
-	__msg_type: MessageTypes = None  # type: MessageTypes
-	__severity: int = None  # type: int
-	__msg: str = None  # type: str
+	__rowid = None  # type: Union[int, None]
+	__card_uid = None  # type: Union[str, None]
+	__timestamp = None  # type: Union[time.struct_time, None]
+	__msg_type = None  # type: MessageTypes
+	__severity = None  # type: int
+	__msg = None  # type: str
 
 	def __init__(self, message: str, rowid: Union[int, None] = None, card: Union[str, None] = None,
 			time_stamp: Union[time.struct_time, int, float] = time.gmtime(),
