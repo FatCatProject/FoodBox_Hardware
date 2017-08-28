@@ -187,7 +187,7 @@ class FoodBox:
 			else:
 				return synced_uid, False
 
-		success: bool = False
+		success = False  # type: bool
 		# TODO - Sync with brainbox
 		return synced_uid, success
 
