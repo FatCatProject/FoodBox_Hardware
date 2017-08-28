@@ -45,6 +45,7 @@ class FoodBox:
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = self.__get_system_setting(SystemSettings.Max_Open_Time) or 600
 		self.__sync_interval = self.__get_system_setting(SystemSettings.Sync_Interval) or 600
+		print(self.__sync_interval)
 		self.__brainbox_ip_address = self.__get_system_setting(SystemSettings.BrainBox_IP)
 		if self.__brainbox_ip_address is None:
 			self.__brainbox_ip_address = self.__scan_for_brainbox()
@@ -61,10 +62,11 @@ class FoodBox:
 		self.__stepper = ULN2003(pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025,
 			presentation_mode=presentation_mode)
 		self.__scale.tare()
-		if not self.__presentation_mode:
-			self.__stepper.quarter_rotation_forward()
-			self.__stepper.quarter_rotation_backward()
+		# if not self.__presentation_mode:
+		# 	self.__stepper.quarter_rotation_forward()
+		# 	self.__stepper.quarter_rotation_backward()
 		self.__sync_on_change = sync_on_change
+		print("Ready")
 
 	def __del__(self):
 		del self.__buzzer

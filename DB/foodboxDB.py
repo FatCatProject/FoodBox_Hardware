@@ -27,9 +27,9 @@ class FoodBoxDB:
 	### Start Card functiones ###
 	def get_card_byID(self, cardID: str):
 		self.c.execute('SELECT * FROM cards WHERE card_id = ?', (cardID,))
+		cardData = self.c.fetchall()
 		if self.c.rowcount == 0:
 			return None
-		cardData = self.c.fetchall()
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
 		return card
 
