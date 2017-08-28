@@ -4,7 +4,9 @@ from Hardware import ULN2003
 from Hardware import HX711
 from Hardware import MFRC522
 from Hardware import RFIDCard
-from typing import Union, Tuple, List
+from typing import Union
+from typing import Tuple
+from typing import List
 from foodbox.system_settings import SystemSettings
 from foodbox.system_log import SystemLog
 from foodbox.feeding_log import FeedingLog
