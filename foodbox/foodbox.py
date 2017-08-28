@@ -96,10 +96,8 @@ class FoodBox:
 
 		cn = FoodBoxDB()  # type: FoodBoxDB
 		value = cn.get_system_setting(setting=setting)
-		from_db = value is not None
 		del cn
-
-		return value, from_db
+		return value
 
 	def __set_system_setting(self, setting: SystemSettings, value):
 		"""Set the value for a specific system setting.
@@ -196,8 +194,7 @@ class FoodBox:
 		:rtype: bool
 		"""
 		while True:
-			if time.time() - time.mktime(self.__sync_last) >= self.__sync_interval:
-
+			if time.time() - time.mktime(self.__sync_last) >= 600: #self.__sync_interval instead of 600
 				sync_uid, sync_success = self.sync_with_brainbox()
 				if sync_success:
 					logstr = "Sync with brainbox succeeded."
