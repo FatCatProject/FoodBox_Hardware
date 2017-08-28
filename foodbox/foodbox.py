@@ -4,9 +4,6 @@ from Hardware import ULN2003
 from Hardware import HX711
 from Hardware import MFRC522
 from Hardware import RFIDCard
-from typing import Union
-from typing import Tuple
-from typing import List
 from foodbox.system_settings import SystemSettings
 from foodbox.system_log import SystemLog
 from foodbox.feeding_log import FeedingLog
@@ -24,11 +21,11 @@ class FoodBox:
 	__stepper = None  # type: ULN2003  # ULN2003 stepper controller
 
 	# Settings section
-	__brainbox_ip_address = None  # type: Union[str, None]  # IP address of BrainBox to communicate with
+	__brainbox_ip_address = None  # type: str  # IP address of BrainBox to communicate with
 	__foodbox_id = None  # type: str  # Unique ID for this box
 	__foodbox_name = None  # type: str  # Name of box, defaults to HOSTNAME
 	__max_open_time = None  # type: int  # Max time to keep lid open before buzzer turns on
-	__scale_offset = None  # type: Union[int, float]  # OFFSET for HX711
+	__scale_offset = None  # type: int  # OFFSET for HX711
 	__scale_scale = None  # type: int  # SCALE for HX711
 	__sync_interval = None  # type: int  # Interval between pooling BrainBox
 	__sync_last = None  # type: time.struct_time  # When was last successful communication with BrainBox
@@ -38,7 +35,7 @@ class FoodBox:
 
 	# End of settings section
 
-	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False) -> None:
+	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
 		self.__scale_offset = self.__get_system_setting(SystemSettings.Scale_Offset) or -96096
 		self.__scale = self.__get_system_setting(SystemSettings.Scale_Scale) or 925
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
@@ -76,7 +73,7 @@ class FoodBox:
 		del self.__scale
 		del self.__stepper
 
-	def __scan_for_brainbox(self) -> Union[str, None]:
+	def __scan_for_brainbox(self):
 		"""Scans the network for a BrainBox.
 
 		:return bb_ip: The IP of the BrainBox server or None if not found.
@@ -86,7 +83,7 @@ class FoodBox:
 		bb_ip = None
 		return bb_ip
 
-	def __get_system_setting(self, setting: SystemSettings) -> Tuple[Union[str, int, float, None], bool]:
+	def __get_system_setting(self, setting: SystemSettings):
 		"""Get the value for a specific system setting.
 
 		:arg setting: The system setting we want.
@@ -104,7 +101,7 @@ class FoodBox:
 
 		return value, from_db
 
-	def __set_system_setting(self, setting: SystemSettings, value: Union[str, int, float, None]) -> bool:
+	def __set_system_setting(self, setting: SystemSettings, value):
 		"""Set the value for a specific system setting.
 
 		:arg setting: The system setting to set.
@@ -121,7 +118,7 @@ class FoodBox:
 		success = True
 		return success
 
-	def write_system_log(self, log: SystemLog) -> bool:
+	def write_system_log(self, log: SystemLog):
 		"""Writes a system log to the database.
 
 		:arg log: The system log to write.
@@ -133,7 +130,7 @@ class FoodBox:
 		del cn
 		return False
 
-	def write_feeding_log(self, log: FeedingLog) -> bool:
+	def write_feeding_log(self, log: FeedingLog):
 		"""Writes a feeding log to the database.
 
 		:arg log: The feeding log to write.
@@ -145,7 +142,7 @@ class FoodBox:
 		del cn
 		return True
 
-	def mark_feeding_logs_synced(self, uids: Tuple[str]) -> bool:
+	def mark_feeding_logs_synced(self, uids: tuple[str]):
 		"""Marks FeedingLogs as synced to brainbox.
 
 		:arg uids: A Tuple[str] of IDs to mark
@@ -158,7 +155,7 @@ class FoodBox:
 		del cn
 		return True
 
-	def delete_synced_feeding_logs(self) -> bool:
+	def delete_synced_feeding_logs(self):
 		"""Delete FeedingLogs that were already synced to the brainbox.
 
 		:rtype: bool
@@ -168,7 +165,7 @@ class FoodBox:
 		del cn
 		return False
 
-	def sync_with_brainbox(self) -> Tuple[Tuple[str], bool]:
+	def sync_with_brainbox(self):
 		"""Sync unsynced FeedingLogs with the brainbox.
 
 		:return synced_uid: A Tuple[str] of uids that were synced, or failed to sync.
@@ -178,9 +175,9 @@ class FoodBox:
 		"""
 
 		cn = FoodBoxDB()  # type: FoodBoxDB
-		uid_to_sync = cn.get_not_synced_feeding_logs()  # type: List[FeedingLog]
+		uid_to_sync = cn.get_not_synced_feeding_logs()  # type: list[FeedingLog]
 		del cn
-		synced_uid = Tuple([log.get_id() for log in uid_to_sync])  # type: Tuple[str]
+		synced_uid = tuple([log.get_id() for log in uid_to_sync])  # type: tuple[str]
 
 		if self.__brainbox_ip_address is None:
 			self.__brainbox_ip_address = self.__scan_for_brainbox()
@@ -193,7 +190,7 @@ class FoodBox:
 		# TODO - Sync with brainbox
 		return synced_uid, success
 
-	def start_mainloop(self) -> bool:
+	def start_mainloop(self):
 		"""The main loop of reading card, checking access and writing logs.
 
 		:rtype: bool
@@ -312,7 +309,7 @@ class FoodBox:
 				break
 		return False
 
-	def open_lid(self) -> bool:
+	def open_lid(self):
 		if self.__lid_open:
 			return True
 		self.__stepper.quarter_rotation_forward()
