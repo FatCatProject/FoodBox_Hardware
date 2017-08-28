@@ -142,7 +142,7 @@ class FoodBox:
 		del cn
 		return True
 
-	def mark_feeding_logs_synced(self, uids: tuple[str]):
+	def mark_feeding_logs_synced(self, uids: tuple):
 		"""Marks FeedingLogs as synced to brainbox.
 
 		:arg uids: A Tuple[str] of IDs to mark
