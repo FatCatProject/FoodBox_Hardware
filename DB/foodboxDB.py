@@ -253,11 +253,10 @@ class FoodBoxDB:
 		self.c.execute('DELETE FROM feeding_logs WHERE synced = 1')
 		self.conn.commit()
 
-	def set_feeding_log_synced(self, myLog: FeedingLog):
+	def set_feeding_log_synced(self, myLogUID: str):
 		"""
-		Get feeding_log OBJECT and change the synced status to True = 1
+		Get feeding_log UID and change the synced status to True = 1
 		"""
-		myLogUID = myLog.get_id()
 		self.c.execute('UPDATE feeding_logs SET synced = 1 WHERE feeding_id = ?', (myLogUID,))
 		self.conn.commit()
 

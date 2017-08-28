@@ -16,7 +16,6 @@ from DB.foodboxDB import FoodBoxDB
 
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
-	__cn = None  # type: FoodBoxDB  # Database connection
 	__proximity = None  # type: LM393  # LM393 proximity sensor
 	__rfid_scanner = None  # type: MFRC522  # MFRC522 RFID reader
 	__scale = None  # type: HX711  # HX711 + load cell
@@ -56,7 +55,6 @@ class FoodBox:
 		self.__presentation_mode = presentation_mode
 
 		self.__buzzer = None  # TODO
-		self.__cn = None  # TODO - Do we need this?
 		self.__proximity = LM393(pin_num=17)
 		self.__rfid_scanner = MFRC522(dev='/dev/spidev0.0', spd=1000000, SDA=8, SCK=11, MOSI=10, MISO=9, RST=25)
 		self.__scale = HX711(dout=4, pd_sck=18, gain=128, readBits=24, offset=self.__scale_offset,
@@ -71,7 +69,6 @@ class FoodBox:
 
 	def __del__(self):
 		del self.__buzzer
-		del self.__cn
 		del self.__proximity
 		del self.__rfid_scanner
 		del self.__scale
@@ -249,7 +246,7 @@ class FoodBox:
 				continue
 
 			cn = FoodBoxDB()  # type: FoodBoxDB
-			card = cn.get_card_byID()  # type: RFIDCard
+			card = cn.get_card_byID(carduid)  # type: RFIDCard
 			del cn
 			if card is None or not card.get_active():
 				logstr = "Invalid card tried to open box."
