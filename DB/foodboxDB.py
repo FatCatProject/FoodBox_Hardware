@@ -9,6 +9,8 @@ from Hardware.MFRC522.rfid_card import RFIDCard
 from DB.createDB import create_foodboxDB
 from foodbox.system_settings import SystemSettings
 from foodbox.feeding_log import FeedingLog
+from foodbox.system_log import SystemLog
+from foodbox.system_log import MessageTypes
 from typing import Union, Tuple
 
 
@@ -19,7 +21,7 @@ class FoodBoxDB:
 			create_foodboxDB()
 
 		self.conn = sqlite3.connect('foodboxDB.db')
-		self.c = self.conn.cursor()
+		self.c: sqlite3.Cursor = self.conn.cursor()
 		self.c.execute("PRAGMA foreign_keys = ON")
 
 	def __del__(self):
@@ -261,9 +263,79 @@ class FoodBoxDB:
 
 
 ### END of feeding_logs functiones ###
+	def get_system_log_by_id(self, logID: int) -> Union[SystemLog, None]:
+		"""Function gets a SystemLog ID and returns a SystemLog object or None if no such object
+		:arg logID: SystemLog ID
+		:type logID: int
+		:return ret_log: The requested log or None
+		:rtype ret_log: Union[SystemLog, None]
+		"""
+		ret_log = None  # type: SystemLog
+		self.c.execute(
+			'SELECT rowid, card_id, time_stamp, message, message_type, severity FROM system_logs WHERE rowid = {}'.format(
+				logID))
+		data = self.c.fetchone()
+		if len(data) == 0:
+			return ret_log
 
-### system_logs functiones ###
-### END of system_logs functiones ###
+		rowid = data[0]  # type: int
+		card_id = data[1]  # type: Union[str, None]
+		time_stamp = int(data[2])  # type: int
+		msg = data[3]  # type: str
+		msg_type = MessageTypes[data[4]]  # type: MessageTypes
+		severity = data[5]  # type: int
+		ret_log = SystemLog(message=msg, rowid=rowid, card=card_id, time_stamp=time_stamp, message_type=msg_type,
+			severity=severity)
+		return ret_log
+
+	def add_system_log(self, myLog: SystemLog) -> Union[None, int]:
+		"""Function gets a SystemLog object and writes it to the database
+
+		:arg myLog: The SystemLog to write to the database
+		:type myLog: SystemLog
+		:return log_rowid: rowid if log was written successfully or None if not
+		:rtype log_rowid: Union[int, None]
+		"""
+		log_rowid = None  # type: Union[int, None]
+		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES({0}, '
+					   '{1}, {2}, {3}, {4}, {5})'.format(myLog.get_card(), time.mktime(myLog.get_time_stamp()),
+			myLog.get_message(), myLog.get_message_type().name, myLog.get_severity()))
+		log_rowid = self.c.lastrowid
+		self.conn.commit()
+		return False
+
+	def get_all_system_logs(self, logs_since: Union[None, time.struct_time] = None) -> Tuple[SystemLog]:
+		"""Returns a tuple of all system logs since logs_since, or all of them
+
+		:arg logs_since: Limit logs to a date, if it's None then no limit on date.
+		:type logs_since: Union[None, time.struct_time]
+		:return systemlog_tuple: A tuple of SystemLogs
+		:rtype systemlog_tuple: Tuple[SystemLog]
+		"""
+		log_list = []  # type: List[SystemLog]
+		if logs_since is None:
+			self.c.execute('SELECT rowid, card_id, time_stamp, message, message_type, severity FROM system_logs')
+		else:
+			self.c.execute(
+				'SELECT rowid, card_id, time_stamp, message, message_type, severity FROM system_logs WHERE time_stamp >= {0}'.format(
+					time.mktime(logs_since)))
+
+		logs_data = self.c.fetchall()
+		for row in logs_data:
+			rowid = row[0]  # type: int
+			card_id = row[1]  # type: Union[str, None]
+			time_stamp = int(row[2])  # type: int
+			msg = row[3]  # type: str
+			msg_type = MessageTypes[row[4]]  # type: MessageTypes
+			severity = row[5]  # type: int
+			log_list.append(
+				SystemLog(message=msg, rowid=rowid, card=card_id, time_stamp=time_stamp, message_type=msg_type,
+					severity=severity))
+
+		return Tuple(log_list)
+### system_logs functions ###
+
+### END of system_logs functions ###
 """
 Printings and tests
 """

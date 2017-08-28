@@ -26,7 +26,7 @@ def create_foodboxDB():
 
 	c.execute('CREATE TABLE IF NOT EXISTS system_logs('
 			  'card_id TEXT, '
-			  'time_stamp TEXT NOT NULL,'
+			  'time_stamp NUMERIC NOT NULL,'
 			  'message TEXT, '
 			  'message_type TEXT NOT NULL,'
 			  'severity INTEGER NOT NULL,'
