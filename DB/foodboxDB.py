@@ -1,17 +1,13 @@
+import os.path
 import sqlite3
 import time
-import datetime
-import uuid
-import os.path
-from turtledemo.chaos import f
 
-from Hardware.MFRC522.rfid_card import RFIDCard
 from DB.createDB import create_foodboxDB
-from foodbox.system_settings import SystemSettings
+from Hardware.MFRC522.rfid_card import RFIDCard
 from foodbox.feeding_log import FeedingLog
-from foodbox.system_log import SystemLog
 from foodbox.system_log import MessageTypes
-
+from foodbox.system_log import SystemLog
+from foodbox.system_settings import SystemSettings
 
 
 class FoodBoxDB:
@@ -21,7 +17,7 @@ class FoodBoxDB:
 			create_foodboxDB()
 
 		self.conn = sqlite3.connect('foodboxDB.db')
-		self.c: sqlite3.Cursor = self.conn.cursor()
+		self.c = self.conn.cursor()  # type: sqlite3.Cursor
 		self.c.execute("PRAGMA foreign_keys = ON")
 
 	def __del__(self):
@@ -41,7 +37,7 @@ class FoodBoxDB:
 		"""
 		self.c.execute('SELECT * FROM cards')
 		cardsData = self.c.fetchall()
-		#print(cardsData)
+		# print(cardsData)
 		cards = []
 
 		for row in cardsData:
@@ -188,8 +184,7 @@ class FoodBoxDB:
 		logData = self.c.fetchall()
 		card = self.get_card_byID(str(logData[0][1]))
 		myLog = FeedingLog(card, open_time=logData[0][2], close_time=logData[0][3], start_weight=logData[0][4],
-						   end_weight=logData[0][5],
-						   feeding_id=logData[0][0], synced=(logData[0][6] == 1))
+			end_weight=logData[0][5], feeding_id=logData[0][0], synced=(logData[0][6] == 1))
 		return myLog
 
 	def add_feeding_log(self, myLog: FeedingLog):
@@ -198,9 +193,9 @@ class FoodBoxDB:
 		"""
 		self.c.execute(
 			'INSERT INTO feeding_logs (feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)'
-			' VALUES (?, ?, ?, ?, ?, ?, ?);',
-			(str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
-			 time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
+			' VALUES (?, ?, ?, ?, ?, ?, ?);', (
+			str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
+			time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
 		self.conn.commit()
 
 	def get_all_feeding_logs(self):
@@ -213,7 +208,7 @@ class FoodBoxDB:
 		for row in logData:
 			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
 			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
-							 feeding_id=row[0], synced=(row[6] == 1))
+				feeding_id=row[0], synced=(row[6] == 1))
 			logs.append(log)
 		return tuple(logs)
 
@@ -228,7 +223,7 @@ class FoodBoxDB:
 		for row in logData:
 			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
 			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
-							 feeding_id=row[0], synced=(row[6] == 1))
+				feeding_id=row[0], synced=(row[6] == 1))
 			logs.append(log)
 		return tuple(logs)
 
@@ -243,7 +238,7 @@ class FoodBoxDB:
 		for row in logData:
 			thisCard = RFIDCard(row[7], row[9], row[8] == 1)
 			log = FeedingLog(thisCard, open_time=row[2], close_time=row[3], start_weight=row[4], end_weight=row[5],
-							 feeding_id=row[0], synced=(row[6] == 1))
+				feeding_id=row[0], synced=(row[6] == 1))
 			logs.append(log)
 		return tuple(logs)
 
@@ -261,8 +256,7 @@ class FoodBoxDB:
 		self.c.execute('UPDATE feeding_logs SET synced = 1 WHERE feeding_id = ?', (myLogUID,))
 		self.conn.commit()
 
-
-### END of feeding_logs functiones ###
+	### END of feeding_logs functiones ###
 	def get_system_log_by_id(self, logID: int):
 		"""Function gets a SystemLog ID and returns a SystemLog object or None if no such object
 		:arg logID: SystemLog ID
@@ -333,6 +327,8 @@ class FoodBoxDB:
 					severity=severity))
 
 		return tuple(log_list)
+
+
 ### system_logs functions ###
 
 ### END of system_logs functions ###
@@ -345,23 +341,22 @@ card = fbdb.get_card_byID('138-236-209-167-001')
 fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '06d32ba16ba544d49718c9506030308e', True)
 # print(fLog)
 # fbdb.add_feeding_log(fLog)
-#print(fbdb.get_all_cards())
+# print(fbdb.get_all_cards())
 # print(fbdb.get_active_cards())
 print(fbdb.get_not_active_cards())
-#print(fbdb.card_state('175-244-217-141-000'))
-#print(fbdb.set_state('138-236-209-167-001', False))
-#fbdb.add_card('222-222-222-222-222')
-#fbdb.delete_card('222-222-222-222-222')
-#print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
-#fbdb.set_system_setting(SystemSettings.FoodBox_Name, 'Elfik')
-#print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
-#crd = RFIDCard('138-236-209-167-111', True)
-#fbdb.set_state_from_object(crd)
-#print(fbdb.get_all_feeding_logs())
-#print(fbdb.get_synced_feeding_logs())
-#print(fbdb.get_not_synced_feeding_logs())
-#fbdb.delete_synced_feeding_logs()
+# print(fbdb.card_state('175-244-217-141-000'))
+# print(fbdb.set_state('138-236-209-167-001', False))
+# fbdb.add_card('222-222-222-222-222')
+# fbdb.delete_card('222-222-222-222-222')
+# print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
+# fbdb.set_system_setting(SystemSettings.FoodBox_Name, 'Elfik')
+# print(fbdb.get_system_setting(SystemSettings.FoodBox_Name))
+# crd = RFIDCard('138-236-209-167-111', True)
+# fbdb.set_state_from_object(crd)
+# print(fbdb.get_all_feeding_logs())
+# print(fbdb.get_synced_feeding_logs())
+# print(fbdb.get_not_synced_feeding_logs())
+# fbdb.delete_synced_feeding_logs()
 myLog = fbdb.get_feeding_log_by_id('b61290112d3140f6969a0983219f7b98')
 print(myLog)
-#fbdb.set_feeding_log_synced(myLog)
-
+# fbdb.set_feeding_log_synced(myLog)
