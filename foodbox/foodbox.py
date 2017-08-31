@@ -37,7 +37,7 @@ class FoodBox:
 
 	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
 		self.__scale_offset = self.__get_system_setting(SystemSettings.Scale_Offset) or -96096
-		self.__scale = self.__get_system_setting(SystemSettings.Scale_Scale) or 925
+		self.__scale_scale = self.__get_system_setting(SystemSettings.Scale_Scale) or 925
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
 		if self.__foodbox_id is None:
 			self.__foodbox_id = uuid.uuid4().hex
