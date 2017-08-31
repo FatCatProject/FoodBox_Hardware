@@ -29,8 +29,7 @@ def create_foodboxDB():
 			  'time_stamp NUMERIC NOT NULL,'
 			  'message TEXT, '
 			  'message_type TEXT NOT NULL,'
-			  'severity INTEGER NOT NULL,'
-			  'FOREIGN KEY(`card_id`) REFERENCES `cards`);')
+			  'severity INTEGER NOT NULL);')
 
 	c.execute('CREATE TABLE IF NOT EXISTS feeding_logs('
 			  'feeding_id TEXT NOT NULL ,'

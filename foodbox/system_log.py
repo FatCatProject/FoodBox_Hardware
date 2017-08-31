@@ -87,7 +87,7 @@ class SystemLog:
 		return
 
 	def __str__(self):
-		string = "{0}, {1}, {2}, {3}, {4}, {5}".format(self.__rowid, self.__card_uid.get_uid(),
+		string = "{0}, {1}, {2}, {3}, {4}, {5}".format(self.__rowid, self.__card_uid,
 			time.asctime(self.__timestamp), self.__msg, self.__msg_type.name, self.__severity)
 		return string
 

@@ -295,7 +295,7 @@ class FoodBoxDB:
 		"""
 		log_rowid = None  # type: int
 		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES({0}, '
-					   '{1}, \'{2}\', \'{3}\', {4})'.format(myLog.get_card() or "null",
+					   '\'{1}\', \'{2}\', \'{3}\', {4})'.format(myLog.get_card(),
 													time.mktime(myLog.get_time_stamp()),
 													str(myLog.get_message()),
 													myLog.get_message_type().name,
