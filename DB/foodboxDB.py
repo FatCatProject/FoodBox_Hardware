@@ -137,7 +137,7 @@ class FoodBoxDB:
 		"""
 		Adding a new card with default state = Active
 		"""
-		self.set_state(cardID, 1)
+		self.set_state(cardID, 1==1)
 		self.conn.commit()
 
 	def delete_card(self, cardID: str):
