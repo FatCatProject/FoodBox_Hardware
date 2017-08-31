@@ -36,15 +36,15 @@ class FoodBox:
 	# End of settings section
 
 	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
-		self.__scale_offset = self.__get_system_setting(SystemSettings.Scale_Offset) or -96096
-		self.__scale_scale = self.__get_system_setting(SystemSettings.Scale_Scale) or 925
+		self.__scale_offset = int(self.__get_system_setting(SystemSettings.Scale_Offset) or -96096)
+		self.__scale_scale = int(self.__get_system_setting(SystemSettings.Scale_Scale) or 925)
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
 		if self.__foodbox_id is None:
 			self.__foodbox_id = uuid.uuid4().hex
 			self.__set_system_setting(SystemSettings.FoodBox_ID, self.__foodbox_id)
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
-		self.__max_open_time = self.__get_system_setting(SystemSettings.Max_Open_Time) or 600
-		self.__sync_interval = self.__get_system_setting(SystemSettings.Sync_Interval) or 600
+		self.__max_open_time = int(self.__get_system_setting(SystemSettings.Max_Open_Time) or 600)
+		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
 		self.__brainbox_ip_address = self.__get_system_setting(SystemSettings.BrainBox_IP)
 		if self.__brainbox_ip_address is None:
 			self.__brainbox_ip_address = self.__scan_for_brainbox()

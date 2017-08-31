@@ -5,7 +5,7 @@
 import RPi.GPIO as GPIO
 
 
-# fatcat1
+# fatcat1 OFFSET = -96096, SCALE=1035
 # fatcat2 OFFSET = -96096, SCALE=925
 # fatcat3
 
