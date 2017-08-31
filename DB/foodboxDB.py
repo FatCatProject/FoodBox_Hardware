@@ -194,12 +194,18 @@ class FoodBoxDB:
 		"""
 		Getting a feeding_log as an object and Adding it to the DB
 		"""
-		self.c.execute(
-			'INSERT INTO feeding_logs (feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)'
-			' VALUES (?, ?, ?, ?, ?, ?, ?);', (
-			str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
-			time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
-		self.conn.commit()
+		try:
+			self.c.execute(
+				'INSERT INTO feeding_logs (feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)'
+				' VALUES (?, ?, ?, ?, ?, ?, ?);', (
+				str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
+				time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
+			self.conn.commit()
+		except sqlite3.IntegrityError as e:
+			thisLog = FeedingLog(card=myLog.get_card(), open_time=myLog.get_open_time(),close_time=myLog.get_close_time(),start_weight=myLog.get_start_weight(),end_weight=myLog.get_end_weight())
+			self.add_feeding_log(thisLog)
+		except Exception:
+			raise
 
 	def get_all_feeding_logs(self):
 		"""
