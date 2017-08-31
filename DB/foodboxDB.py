@@ -28,7 +28,7 @@ class FoodBoxDB:
 	def get_card_byID(self, cardID: str):
 		self.c.execute('SELECT * FROM cards WHERE card_id = ?', (cardID,))
 		cardData = self.c.fetchall()
-		if self.c.rowcount <= 0:
+		if len(cardData) <= 0:
 			return None
 		print(cardData)  # TODO - Delete this print after fixing the problem with index out of bounds
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
@@ -157,7 +157,7 @@ class FoodBoxDB:
 		"""
 		self.c.execute('SELECT * FROM system_settings WHERE key_name = ?', (setting.name,))
 		data = self.c.fetchall()
-		if self.c.rowcount <= 0:
+		if len(data) <= 0:
 			return None
 		else:
 			for row in data:
@@ -295,7 +295,7 @@ class FoodBoxDB:
 		"""
 		log_rowid = None  # type: int
 		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES({0}, '
-					   '\'{1}\', \'{2}\', \'{3}\', {4})'.format(myLog.get_card(),
+					   '\'{1}\', \'{2}\', \'{3}\', {4})'.format(str(myLog.get_card()),
 													time.mktime(myLog.get_time_stamp()),
 													str(myLog.get_message()),
 													myLog.get_message_type().name,
@@ -342,7 +342,8 @@ class FoodBoxDB:
 """
 Printings and tests
 """
-# fbdb = FoodBoxDB()
+fbdb = FoodBoxDB()
+##fbdb.add_card('138-236-209-167-111')
 # sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
 #
 # fbdb.add_system_log(sysLog)
