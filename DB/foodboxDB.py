@@ -295,9 +295,13 @@ class FoodBoxDB:
 		"""
 		log_rowid = None  # type: int
 		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES({0}, '
-					   '{1}, {2}, {3}, {4}, {5})'.format(myLog.get_card(), time.mktime(myLog.get_time_stamp()),
-			myLog.get_message(), myLog.get_message_type().name, myLog.get_severity()))
+					   '{1}, \'{2}\', \'{3}\', {4})'.format(myLog.get_card() or "null",
+													time.mktime(myLog.get_time_stamp()),
+													str(myLog.get_message()),
+													myLog.get_message_type().name,
+													myLog.get_severity()))
 		log_rowid = self.c.lastrowid
+		print(log_rowid)
 		self.conn.commit()
 		return False
 
@@ -339,6 +343,9 @@ class FoodBoxDB:
 Printings and tests
 """
 # fbdb = FoodBoxDB()
+# sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
+#
+# fbdb.add_system_log(sysLog)
 # card = fbdb.get_card_byID('138-236-209-167-001')
 # print(card)
 # fLog = FeedingLog(card, 1503409879, 1503409904, 2, 1.5, '06d32ba16ba544d49718c9506030308e', True)
