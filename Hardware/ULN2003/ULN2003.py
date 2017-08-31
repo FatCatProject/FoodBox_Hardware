@@ -54,14 +54,15 @@ class ULN2003:
 
 	def __del__(self):
 		self.stop()
-		GPIO.output(self.__coil_a_1_pin, GPIO.LOW)
-		GPIO.output(self.__coil_a_2_pin, GPIO.LOW)
-		GPIO.output(self.__coil_b_1_pin, GPIO.LOW)
-		GPIO.output(self.__coil_b_2_pin, GPIO.LOW)
-		GPIO.setup(self.__coil_a_1_pin, GPIO.IN)
-		GPIO.setup(self.__coil_a_2_pin, GPIO.IN)
-		GPIO.setup(self.__coil_b_1_pin, GPIO.IN)
-		GPIO.setup(self.__coil_b_2_pin, GPIO.IN)
+		# GPIO.output(self.__coil_a_1_pin, GPIO.LOW)
+		# GPIO.output(self.__coil_a_2_pin, GPIO.LOW)
+		# GPIO.output(self.__coil_b_1_pin, GPIO.LOW)
+		# GPIO.output(self.__coil_b_2_pin, GPIO.LOW)
+		# GPIO.setup(self.__coil_a_1_pin, GPIO.IN)
+		# GPIO.setup(self.__coil_a_2_pin, GPIO.IN)
+		# GPIO.setup(self.__coil_b_1_pin, GPIO.IN)
+		# GPIO.setup(self.__coil_b_2_pin, GPIO.IN)
+		pass
 
 	def set_step(self, w1, w2, w3, w4):
 		GPIO.output(self.__coil_a_1_pin, w1)
