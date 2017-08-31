@@ -23,6 +23,15 @@ def main():
 	cn = FoodBoxDB()
 	new_logs = cn.get_all_system_logs(startup_time)  # type: tuple
 	i = 1
+	print("SystemLogs:")
+	for log in new_logs:
+		print("{:04} : ".format(i), end="")
+		print(log)
+		i += 1
+
+	new_logs = cn.get_all_feeding_logs()  # type: tuple
+	i = 1
+	print("FeedingLogs:")
 	for log in new_logs:
 		print("{:04} : ".format(i), end="")
 		print(log)
