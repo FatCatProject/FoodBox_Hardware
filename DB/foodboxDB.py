@@ -28,7 +28,7 @@ class FoodBoxDB:
 	def get_card_byID(self, cardID: str):
 		self.c.execute('SELECT * FROM cards WHERE card_id = ?', (cardID,))
 		cardData = self.c.fetchall()
-		if self.c.rowcount == 0:
+		if self.c.rowcount <= 0:
 			return None
 		print(cardData)  # TODO - Delete this print after fixing the problem with index out of bounds
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
@@ -157,7 +157,7 @@ class FoodBoxDB:
 		"""
 		self.c.execute('SELECT * FROM system_settings WHERE key_name = ?', (setting.name,))
 		data = self.c.fetchall()
-		if self.c.rowcount == 0:
+		if self.c.rowcount <= 0:
 			return None
 		else:
 			for row in data:
@@ -171,7 +171,7 @@ class FoodBoxDB:
 		"""
 		self.c.execute('UPDATE system_settings SET value_text = ? WHERE key_name = ?', (value, setting.name))
 		self.conn.commit()
-		if self.c.rowcount == 0:
+		if self.c.rowcount <= 0:
 			self.c.execute('INSERT INTO system_settings (key_name, value_text) VALUES (?, ?)', (setting.name, value))
 			self.conn.commit()
 

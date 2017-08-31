@@ -65,7 +65,7 @@ class SystemLog:
 		return self.__msg_type
 
 	def __set_message_type(self, message_type: MessageTypes):
-		assert type(message_type) is type(MessageTypes), "message_type is not an MessageTypes, it is : %r" % type(
+		assert isinstance(message_type, MessageTypes), "message_type is not an MessageTypes, it is : %r" % type(
 			message_type)
 		self.__msg_type = message_type
 		return
