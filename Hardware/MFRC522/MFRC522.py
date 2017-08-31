@@ -134,8 +134,9 @@ class MFRC522:
 		self.MFRC522_Init()
 
 	def __del__(self):
-		GPIO.output(self.__RST, GPIO.LOW)
-		GPIO.setup(self.__RST, GPIO.IN)
+		# GPIO.output(self.__RST, GPIO.LOW)
+		# GPIO.setup(self.__RST, GPIO.IN)
+		pass
 
 	def MFRC522_Reset(self):
 		self.Write_MFRC522(self.CommandReg, self.PCD_RESETPHASE)

@@ -5,7 +5,7 @@
 import RPi.GPIO as GPIO
 
 
-# fatcat1
+# fatcat1 OFFSET = -96096, SCALE=1035
 # fatcat2 OFFSET = -96096, SCALE=925
 # fatcat3
 
@@ -30,8 +30,9 @@ class HX711:
 		self.set_gain(gain)
 
 	def __del__(self):
-		GPIO.setup(self.PD_SCK, GPIO.IN)
-		GPIO.setup(self.DOUT, GPIO.IN)
+		# GPIO.setup(self.PD_SCK, GPIO.IN)
+		# GPIO.setup(self.DOUT, GPIO.IN)
+		pass
 
 	def is_ready(self):
 		return GPIO.input(self.DOUT) == 0
