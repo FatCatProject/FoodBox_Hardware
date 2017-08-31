@@ -45,7 +45,6 @@ class FoodBox:
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = self.__get_system_setting(SystemSettings.Max_Open_Time) or 600
 		self.__sync_interval = self.__get_system_setting(SystemSettings.Sync_Interval) or 600
-		print(self.__sync_interval)
 		self.__brainbox_ip_address = self.__get_system_setting(SystemSettings.BrainBox_IP)
 		if self.__brainbox_ip_address is None:
 			self.__brainbox_ip_address = self.__scan_for_brainbox()
@@ -69,11 +68,16 @@ class FoodBox:
 		print("Ready")
 
 	def __del__(self):
-		del self.__buzzer
-		del self.__proximity
-		del self.__rfid_scanner
-		del self.__scale
-		del self.__stepper
+		if self.__buzzer is not None:
+			del self.__buzzer
+		if self.__proximity is not None:
+			del self.__proximity
+		if self.__rfid_scanner is not None:
+			del self.__rfid_scanner
+		if self.__scale is not None:
+			del self.__scale
+		if self.__stepper is not None:
+			del self.__stepper
 
 	def __scan_for_brainbox(self):
 		"""Scans the network for a BrainBox.
@@ -196,7 +200,7 @@ class FoodBox:
 		:rtype: bool
 		"""
 		while True:
-			if time.time() - time.mktime(self.__sync_last) >= 600: #self.__sync_interval instead of 600
+			if time.time() - time.mktime(self.__sync_last) >= 600:  # self.__sync_interval instead of 600
 				sync_uid, sync_success = self.sync_with_brainbox()
 				if sync_success:
 					logstr = "Sync with brainbox succeeded."

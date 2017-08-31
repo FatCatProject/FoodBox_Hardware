@@ -30,6 +30,7 @@ class FoodBoxDB:
 		cardData = self.c.fetchall()
 		if self.c.rowcount == 0:
 			return None
+		print(cardData)  # TODO - Delete this print after fixing the problem with index out of bounds
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
 		return card
 

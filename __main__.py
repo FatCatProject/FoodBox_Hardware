@@ -26,6 +26,7 @@ def main():
 	for log in new_logs:
 		print("{:04} : ".format(i), end="")
 		print(log)
+		i += 1
 
 if __name__ == "__main__":
 	main()
