@@ -1,8 +1,12 @@
 from foodbox.foodbox import FoodBox
-from RPi.GPIO import GPIO
+import RPi.GPIO as GPIO
+from DB.foodboxDB import FoodBoxDB
+from foodbox.system_log import SystemLog
+import time
 
 
 def main():
+	startup_time = time.gmtime()  # type: startup_time
 	box = FoodBox()
 	try:
 		box.start_mainloop()
@@ -14,6 +18,14 @@ def main():
 		del box
 		GPIO.cleanup()
 		print("Clean up and exit.")
+
+	print("Printing new logs for debugging purposes:")
+	cn = FoodBoxDB()
+	new_logs = cn.get_all_system_logs(startup_time)  # type: tuple
+	i = 1
+	for log in new_logs:
+		print("{:04} : ".format(i), end="")
+		print(log)
 
 if __name__ == "__main__":
 	main()
