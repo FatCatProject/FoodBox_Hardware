@@ -66,6 +66,7 @@ class FoodBox:
 		# 	self.__stepper.quarter_rotation_backward()
 		self.__sync_on_change = sync_on_change
 		print("Ready")
+		print("Weight on Ready is: ", self.__scale.get_units())
 
 	def __del__(self):
 		if self.__buzzer is not None:
@@ -295,7 +296,7 @@ class FoodBox:
 			print("End weight is: ", end_weight)
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
 				end_weight=end_weight)
-			print("The feeding id is: ", feedinglog.get_id())
+			#print("The feeding id is: ", feedinglog.get_id())
 			self.write_feeding_log(feedinglog)
 			del feedinglog
 			if self.__sync_on_change:
