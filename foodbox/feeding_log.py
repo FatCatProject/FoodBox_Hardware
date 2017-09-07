@@ -15,7 +15,7 @@ class FeedingLog:
 	def __init__(self, card: RFIDCard, open_time: time.struct_time, close_time: time.struct_time,
 			start_weight, end_weight,
 			feeding_id: str = uuid.uuid4().hex, synced: bool = False):
-		print("The feeding id is: ", feeding_id)
+		#print("The feeding id is: ", feeding_id)
 		assert type(start_weight) is int or type(start_weight) is float, "Wrong type"
 		assert type(end_weight) is int or type(end_weight) is float, "Wrong type"
 		self.__set_card(card=card)
