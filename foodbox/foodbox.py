@@ -32,10 +32,12 @@ class FoodBox:
 	__presentation_mode = False  # type: bool
 	__sync_on_change = False  # type: bool  # Should sync with the BrainBox on every FeedingLog?
 	__lid_open = False  # type: bool
+	__last_weight = None  # type: int
 
 	# End of settings section
 
 	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
+		self.__last_weight = int(self.__get_system_setting(SystemSettings.Last_Weight) or 0)
 		self.__scale_offset = int(self.__get_system_setting(SystemSettings.Scale_Offset) or -96096)
 		self.__scale_scale = int(self.__get_system_setting(SystemSettings.Scale_Scale) or 925)
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
@@ -61,6 +63,7 @@ class FoodBox:
 		self.__stepper = ULN2003(pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025,
 			presentation_mode=presentation_mode)
 		self.__scale.tare()
+		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
 		# if not self.__presentation_mode:
 		# 	self.__stepper.quarter_rotation_forward()
 		# 	self.__stepper.quarter_rotation_backward()
@@ -297,6 +300,7 @@ class FoodBox:
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
 				end_weight=end_weight, feeding_id=uuid.uuid4().hex)
 			self.write_feeding_log(feedinglog)
+			self.__set_system_setting(SystemSettings.Last_Weight, end_weight)  # TODO - Check negative?
 			print("Feeding log created: ",feedinglog)
 			del feedinglog
 			if self.__sync_on_change:
