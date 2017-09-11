@@ -9,3 +9,4 @@ class SystemSettings(Enum):
 	Scale_Offset = 5  # OFFSET for HX711
 	Scale_Scale = 6  # SCALE for HX711
 	Sync_Interval = 7  # Interval between pooling BrainBox
+	Last_Weight = 8  # The last weight before system went down
