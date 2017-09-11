@@ -295,7 +295,7 @@ class FoodBox:
 			end_weight = self.__scale.get_units()
 			print("End weight is: ", end_weight)
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
-				end_weight=end_weight)
+				end_weight=end_weight, feeding_id=uuid.uuid4().hex)
 			self.write_feeding_log(feedinglog)
 			print("Feeding log created: ",feedinglog)
 			del feedinglog

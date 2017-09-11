@@ -38,7 +38,7 @@ class FeedingLog:
 	def __set_id(self, feeding_id: str):
 		assert type(feeding_id) is str, "id is not an str, it is %r" % type(feeding_id)
 		try:
-			self.__feeding_id = uuid.uuid4().hex
+			self.__feeding_id = uuid.UUID(feeding_id).hex
 		except Exception as e:
 			raise e
 		return
