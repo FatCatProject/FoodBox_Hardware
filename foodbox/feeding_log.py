@@ -14,7 +14,7 @@ class FeedingLog:
 
 	def __init__(self, card: RFIDCard, open_time: time.struct_time, close_time: time.struct_time,
 			start_weight, end_weight,
-			feeding_id: str = uuid.uuid4().hex, synced: bool = False):
+			feeding_id, synced: bool = False):
 		assert type(start_weight) is int or type(start_weight) is float, "Wrong type"
 		assert type(end_weight) is int or type(end_weight) is float, "Wrong type"
 		self.__set_card(card=card)
@@ -60,7 +60,7 @@ class FeedingLog:
 		if type(open_time) is time.struct_time:
 			self.__open_time = open_time
 		else:
-			self.__open_time = time.gmtime(open_time)
+			self.__open_time = time.localtime(open_time)
 		return
 
 	def get_close_time(self):
@@ -73,7 +73,7 @@ class FeedingLog:
 		if type(close_time) is time.struct_time:
 			self.__close_time = close_time
 		else:
-			self.__close_time = time.gmtime(close_time)
+			self.__close_time = time.localtime(close_time)
 		return
 
 	def get_start_weight(self):

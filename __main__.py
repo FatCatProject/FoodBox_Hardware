@@ -2,6 +2,7 @@ from foodbox.foodbox import FoodBox
 import RPi.GPIO as GPIO
 from DB.foodboxDB import FoodBoxDB
 from foodbox.system_log import SystemLog
+from foodbox.feeding_log import FeedingLog
 import time
 
 

@@ -342,7 +342,7 @@ class FoodBoxDB:
 """
 Printings and tests
 """
-fbdb = FoodBoxDB()
+#fbdb = FoodBoxDB()
 ##fbdb.add_card('138-236-209-167-111')
 # sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
 #

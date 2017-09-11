@@ -66,6 +66,7 @@ class FoodBox:
 		# 	self.__stepper.quarter_rotation_backward()
 		self.__sync_on_change = sync_on_change
 		print("Ready")
+		print("Weight on Ready is: ", self.__scale.get_units())
 
 	def __del__(self):
 		if self.__buzzer is not None:
@@ -272,6 +273,7 @@ class FoodBox:
 			self.write_system_log(syslog)
 			open_time = time.localtime()
 			start_weight = self.__scale.get_units()
+			print("Starting weight is: ",start_weight)
 			self.open_lid()
 			time.sleep(5)
 			if card.get_name() == "ADMIN":
@@ -291,9 +293,12 @@ class FoodBox:
 			self.close_lid()
 			close_time = time.localtime()
 			end_weight = self.__scale.get_units()
+			print("End weight is: ", end_weight)
 			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
-				end_weight=end_weight)
+				end_weight=end_weight, feeding_id=uuid.uuid4().hex)
 			self.write_feeding_log(feedinglog)
+			print("Feeding log created: ",feedinglog)
+			del feedinglog
 			if self.__sync_on_change:
 				sync_uid, sync_success = self.sync_with_brainbox()
 				if sync_success:
