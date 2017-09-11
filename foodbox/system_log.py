@@ -17,7 +17,7 @@ class SystemLog:
 	__severity = None  # type: int
 	__msg = None  # type: str
 
-	def __init__(self, message: str, rowid: int = None, card: str = None, time_stamp=time.gmtime(),
+	def __init__(self, message: str, rowid: int = None, card: str = None, time_stamp=time.localtime(),
 			message_type: MessageTypes = MessageTypes.Information, severity: int = 0):
 		assert type(time_stamp) is time.struct_time or type(time_stamp) is int or type(time_stamp) is float
 		self.__set_rowid(rowid=rowid)
@@ -58,7 +58,7 @@ class SystemLog:
 			self.__timestamp = time_stamp
 		else:
 			#  elif type(time_stamp) is float or type(time_stamp) is int:
-			self.__timestamp = time.gmtime(time_stamp)
+			self.__timestamp = time.localtime(time_stamp)
 		return
 
 	def get_message_type(self):
