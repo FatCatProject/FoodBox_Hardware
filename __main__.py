@@ -7,7 +7,7 @@ import time
 
 
 def main():
-	startup_time = time.gmtime()  # type: startup_time
+	startup_time = time.localtime()  # type: startup_time
 	box = FoodBox()
 	try:
 		box.start_mainloop()
