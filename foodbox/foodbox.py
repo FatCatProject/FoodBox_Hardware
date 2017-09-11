@@ -32,12 +32,12 @@ class FoodBox:
 	__presentation_mode = False  # type: bool
 	__sync_on_change = False  # type: bool  # Should sync with the BrainBox on every FeedingLog?
 	__lid_open = False  # type: bool
-	__last_weight = None  # type: int
+	__last_weight = None  # type: float
 
 	# End of settings section
 
 	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
-		self.__last_weight = int(self.__get_system_setting(SystemSettings.Last_Weight) or 0)
+		self.__last_weight = float(self.__get_system_setting(SystemSettings.Last_Weight) or 0)
 		self.__scale_offset = int(self.__get_system_setting(SystemSettings.Scale_Offset) or -96096)
 		self.__scale_scale = int(self.__get_system_setting(SystemSettings.Scale_Scale) or 925)
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
