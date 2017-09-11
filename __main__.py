@@ -30,14 +30,13 @@ def main():
 		print(log)
 		i += 1
 
-	#----Prints wrong feeding id's and not local time ----
-	# new_logs = cn.get_all_feeding_logs()  # type: tuple
-	# i = 1
-	# print("FeedingLogs:")
-	# for log in new_logs:
-	# 	print("{:04} : ".format(i), end="")
-	# 	print(log)
-	# 	i += 1
+	new_logs = cn.get_all_feeding_logs()  # type: tuple
+	i = 1
+	print("FeedingLogs:")
+	for log in new_logs:
+		print("{:04} : ".format(i), end="")
+		print(log)
+		i += 1
 
 if __name__ == "__main__":
 	main()
