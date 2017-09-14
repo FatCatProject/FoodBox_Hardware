@@ -12,6 +12,10 @@ import socket
 import uuid
 from DB.foodboxDB import FoodBoxDB
 
+from zeroconf import ServiceBrowser
+from zeroconf import ServiceStateChange
+from zeroconf import Zeroconf
+from zeroconf import ZeroconfServiceTypes
 
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
@@ -19,9 +23,11 @@ class FoodBox:
 	__rfid_scanner = None  # type: MFRC522  # MFRC522 RFID reader
 	__scale = None  # type: HX711  # HX711 + load cell
 	__stepper = None  # type: ULN2003  # ULN2003 stepper controller
+	__browser = None  # Zeroconf ServiceBrowser
 
 	# Settings section
-	__brainbox_ip_address = None  # type: str  # IP address of BrainBox to communicate with
+	__brainbox_ip_address = None  # type: bytes  # IP address of BrainBox to communicate with
+	__brainbox_port_number = None  # type: int  # TCP port number
 	__foodbox_id = None  # type: str  # Unique ID for this box
 	__foodbox_name = None  # type: str  # Name of box, defaults to HOSTNAME
 	__max_open_time = None  # type: int  # Max time to keep lid open before buzzer turns on
@@ -49,11 +55,6 @@ class FoodBox:
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = int(self.__get_system_setting(SystemSettings.Max_Open_Time) or 600)
 		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
-		self.__brainbox_ip_address = self.__get_system_setting(SystemSettings.BrainBox_IP)
-		if self.__brainbox_ip_address is None:
-			self.__brainbox_ip_address = self.__scan_for_brainbox()
-			if self.__brainbox_ip_address is not None:
-				self.__set_system_setting(SystemSettings.BrainBox_IP, self.__brainbox_ip_address)
 		self.__sync_last = time.localtime()
 		self.__presentation_mode = presentation_mode
 
@@ -67,14 +68,16 @@ class FoodBox:
 		self.__scale.tare()
 		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
 		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units())
-		# if not self.__presentation_mode:
-		# 	self.__stepper.quarter_rotation_forward()
-		# 	self.__stepper.quarter_rotation_backward()
+
+		self.start_network_discovery()
 		self.__sync_on_change = sync_on_change
 		print("Ready")
 		print("Weight on Ready is: ", self.__scale.get_units())
 
 	def __del__(self):
+		if self.__browser is not None:
+			self.stop_network_discovery()
+			del self.__browser
 		if self.__buzzer is not None:
 			del self.__buzzer
 		if self.__proximity is not None:
@@ -85,16 +88,6 @@ class FoodBox:
 			del self.__scale
 		if self.__stepper is not None:
 			del self.__stepper
-
-	def __scan_for_brainbox(self):
-		"""Scans the network for a BrainBox.
-
-		:return bb_ip: The IP of the BrainBox server or None if not found.
-		:rtype bb_ip: String, None
-		"""
-		# TODO
-		bb_ip = None
-		return bb_ip
 
 	def __get_system_setting(self, setting: SystemSettings):
 		"""Get the value for a specific system setting.
@@ -190,12 +183,8 @@ class FoodBox:
 		del cn
 		synced_uid = tuple([log.get_id() for log in uid_to_sync])  # type: tuple[str]
 
-		if self.__brainbox_ip_address is None:
-			self.__brainbox_ip_address = self.__scan_for_brainbox()
-			if self.__brainbox_ip_address is not None:
-				self.__set_system_setting(SystemSettings.BrainBox_IP, self.__brainbox_ip_address)
-			else:
-				return synced_uid, False
+		if self.__brainbox_ip_address is None or self.__brainbox_port_number is None:
+			return synced_uid, False
 
 		success = False  # type: bool
 		# TODO - Sync with brainbox
@@ -337,3 +326,68 @@ class FoodBox:
 		self.__stepper.quarter_rotation_backward()
 		self.__lid_open = False
 		return True
+
+	def start_network_discovery(self):
+		logstr = "Starting network discovery."
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+		self.write_system_log(syslog)
+		print(logstr)
+
+		zeroconf = Zeroconf()
+		self.__browser = ServiceBrowser(zeroconf, "_http._tcp.local.", handlers=[self.on_service_state_change])
+		return None
+
+	def stop_network_discovery(self):
+		logstr = "Stopping network discovery."
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+		self.write_system_log(syslog)
+		print(logstr)
+
+		self.__browser.zc.close()
+		return None
+
+	def on_service_state_change(self, zeroconf: Zeroconf, service_type: ZeroconfServiceTypes, name: str,
+			state_change: ServiceStateChange):
+		logstr = "service_state_change"
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+		self.write_system_log(syslog)
+
+		info = zeroconf.get_service_info(service_type, name)
+		if info:
+			if info.name == "FatCat_BrainBox":
+				if state_change is ServiceStateChange.Added:
+					self.__brainbox_ip_address = info.address
+					self.__brainbox_port_number = info.port
+					self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=info.address)
+					self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=info.port)
+
+					logstr = "BrainBox_IP and BrainBox_Port updates - {0}:{1}".format(info.address, info.port)
+					logtype = MessageTypes.Information
+					logsev = 0
+					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
+						severity=logsev)
+					self.write_system_log(syslog)
+
+				elif state_change is ServiceStateChange.Removed:
+					self.__brainbox_ip_address = None
+					self.__brainbox_port_number = None
+					self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
+					self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=None)
+
+					logstr = "BrainBox_IP and BrainBox_Port removed."
+					logtype = MessageTypes.Information
+					logsev = 0
+					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
+						severity=logsev)
+					self.write_system_log(syslog)
+			else:
+				print("network_discovery discovered {0},{1},{2},{3}. - This is a debug message. ".format(info.name,
+					info.address, info.port, info.type))  # TODO - Delete this
+		else:
+			print("network_discovery No info. - This is a debug message. ")  # TODO - Delete this.
