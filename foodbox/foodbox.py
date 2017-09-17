@@ -17,6 +17,7 @@ from zeroconf import ServiceStateChange
 from zeroconf import Zeroconf
 from zeroconf import ZeroconfServiceTypes
 
+
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
 	__proximity = None  # type: LM393  # LM393 proximity sensor
@@ -61,10 +62,10 @@ class FoodBox:
 		self.__buzzer = None  # TODO
 		self.__proximity = LM393(pin_num=17)
 		self.__rfid_scanner = MFRC522(dev='/dev/spidev0.0', spd=1000000, SDA=8, SCK=11, MOSI=10, MISO=9, RST=25)
-		self.__scale = HX711(dout=4, pd_sck=18, gain=128, readBits=24, offset=self.__scale_offset,
-			scale=self.__scale_scale)
-		self.__stepper = ULN2003(pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025,
-			presentation_mode=presentation_mode)
+		self.__scale = HX711(
+			dout=4, pd_sck=18, gain=128, readBits=24, offset=self.__scale_offset, scale=self.__scale_scale)
+		self.__stepper = ULN2003(
+			pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025, presentation_mode=presentation_mode)
 		self.__scale.tare()
 		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
 		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units())
@@ -221,8 +222,8 @@ class FoodBox:
 						logtype = MessageTypes.Error
 						logsev = 1
 						deleted_logs = False
-					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
-						severity=logsev)
+					syslog = SystemLog(
+						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 					self.write_system_log(syslog)
 
 					if deleted_logs:
@@ -234,8 +235,8 @@ class FoodBox:
 							logstr = "Failed to delete FeedingLogs marked as synced."
 							logtype = MessageTypes.Error
 							logsev = 1
-						syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
-							severity=logsev)
+						syslog = SystemLog(
+							message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 						self.write_system_log(syslog)
 
 			carduid = self.__rfid_scanner.get_uid()
@@ -250,8 +251,8 @@ class FoodBox:
 				logstr = "Invalid card tried to open box."
 				logtype = MessageTypes.Information
 				logsev = 1
-				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev,
-					card=carduid)
+				syslog = SystemLog(
+					message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev, card=carduid)
 				self.write_system_log(syslog)
 				old_carduid = carduid
 				while self.__rfid_scanner.get_uid() == old_carduid:
@@ -263,8 +264,8 @@ class FoodBox:
 				logstr = "ADMIN card opened the box."
 			logtype = MessageTypes.Information
 			logsev = 0
-			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev,
-				card=carduid)
+			syslog = SystemLog(
+				message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev, card=carduid)
 			self.write_system_log(syslog)
 			open_time = time.localtime()
 			start_weight = self.__scale.get_units()
@@ -280,8 +281,9 @@ class FoodBox:
 					logstr = "Lid was opened for too long."
 					logtype = MessageTypes.Information
 					logsev = 0
-					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
-						severity=logsev, card=carduid)
+					syslog = SystemLog(
+						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev,
+						card=carduid)
 					self.write_system_log(syslog)
 				# TODO - Beep at the cat
 
@@ -289,8 +291,9 @@ class FoodBox:
 			close_time = time.localtime()
 			end_weight = self.__scale.get_units()
 			print("End weight is: ", end_weight)
-			feedinglog = FeedingLog(card=card, open_time=open_time, close_time=close_time, start_weight=start_weight,
-				end_weight=end_weight, feeding_id=uuid.uuid4().hex)
+			feedinglog = FeedingLog(
+				card=card, open_time=open_time, close_time=close_time, start_weight=start_weight, end_weight=end_weight,
+				feeding_id=uuid.uuid4().hex)
 			self.write_feeding_log(feedinglog)
 			self.__set_system_setting(SystemSettings.Last_Weight, end_weight)
 			print("Feeding log created: ", feedinglog)
@@ -350,8 +353,8 @@ class FoodBox:
 		self.__browser.zc.close()
 		return None
 
-	def on_service_state_change(self, zeroconf: Zeroconf, service_type: ZeroconfServiceTypes, name: str,
-			state_change: ServiceStateChange):
+	def on_service_state_change(
+			self, zeroconf: Zeroconf, service_type: ZeroconfServiceTypes, name: str, state_change: ServiceStateChange):
 		logstr = "service_state_change"
 		logtype = MessageTypes.Information
 		logsev = 0
@@ -370,8 +373,8 @@ class FoodBox:
 					logstr = "BrainBox_IP and BrainBox_Port updates - {0}:{1}".format(info.address, info.port)
 					logtype = MessageTypes.Information
 					logsev = 0
-					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
-						severity=logsev)
+					syslog = SystemLog(
+						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 					self.write_system_log(syslog)
 
 				elif state_change is ServiceStateChange.Removed:
@@ -383,11 +386,13 @@ class FoodBox:
 					logstr = "BrainBox_IP and BrainBox_Port removed."
 					logtype = MessageTypes.Information
 					logsev = 0
-					syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(),
-						severity=logsev)
+					syslog = SystemLog(
+						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 					self.write_system_log(syslog)
 			else:
-				print("network_discovery discovered {0},{1},{2},{3}. - This is a debug message. ".format(info.name,
-					info.address, info.port, info.type))  # TODO - Delete this
+				print(
+					"network_discovery discovered {0},{1},{2},{3}. - This is a debug message. ".format(
+						info.name, info.address, info.port, info.type)
+				)  # TODO - Delete this
 		else:
 			print("network_discovery No info. - This is a debug message. ")  # TODO - Delete this.
