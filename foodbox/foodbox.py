@@ -339,7 +339,7 @@ class FoodBox:
 		print(logstr)
 
 		zeroconf = Zeroconf()
-		self.__browser = ServiceBrowser(zeroconf, "_http._tcp.local.", handlers=[self.on_service_state_change])
+		self.__browser = ServiceBrowser(zeroconf, "_FatCatBB._tcp.local.", handlers=[self.on_service_state_change])
 		return None
 
 	def stop_network_discovery(self):
@@ -363,36 +363,29 @@ class FoodBox:
 
 		info = zeroconf.get_service_info(service_type, name)
 		if info:
-			if info.name == "FatCat_BrainBox":
-				if state_change is ServiceStateChange.Added:
-					self.__brainbox_ip_address = info.address
-					self.__brainbox_port_number = info.port
-					self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=info.address)
-					self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=info.port)
+			if state_change is ServiceStateChange.Added:
+				self.__brainbox_ip_address = info.address
+				self.__brainbox_port_number = info.port
+				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=info.address)
+				self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=info.port)
 
-					logstr = "BrainBox_IP and BrainBox_Port updates - {0}:{1}".format(info.address, info.port)
-					logtype = MessageTypes.Information
-					logsev = 0
-					syslog = SystemLog(
-						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-					self.write_system_log(syslog)
+				logstr = "BrainBox_IP and BrainBox_Port updates - {0}:{1}".format(
+					socket.inet_ntoa(info.address), info.port)
+				logtype = MessageTypes.Information
+				logsev = 0
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
 
-				elif state_change is ServiceStateChange.Removed:
-					self.__brainbox_ip_address = None
-					self.__brainbox_port_number = None
-					self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
-					self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=None)
+			elif state_change is ServiceStateChange.Removed:
+				self.__brainbox_ip_address = None
+				self.__brainbox_port_number = None
+				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
+				self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=None)
 
-					logstr = "BrainBox_IP and BrainBox_Port removed."
-					logtype = MessageTypes.Information
-					logsev = 0
-					syslog = SystemLog(
-						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-					self.write_system_log(syslog)
-			else:
-				print(
-					"network_discovery discovered {0},{1},{2},{3}. - This is a debug message. ".format(
-						info.name, info.address, info.port, info.type)
-				)  # TODO - Delete this
+				logstr = "BrainBox_IP and BrainBox_Port removed."
+				logtype = MessageTypes.Information
+				logsev = 0
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
 		else:
 			print("network_discovery No info. - This is a debug message. ")  # TODO - Delete this.
