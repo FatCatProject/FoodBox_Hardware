@@ -364,6 +364,7 @@ class FoodBox:
 		info = zeroconf.get_service_info(service_type, name)
 		if info:
 			if state_change is ServiceStateChange.Added:
+				print("IP: {0} - PORT: {1}".format(socket.inet_ntoa(info.address), info.port))
 				self.__brainbox_ip_address = info.address
 				self.__brainbox_port_number = info.port
 				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=info.address)
@@ -376,7 +377,8 @@ class FoodBox:
 				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 				self.write_system_log(syslog)
 
-			elif state_change is ServiceStateChange.Removed:
+			elif state_change is ServiceStateChange.Removed:  # We never get inside here.
+				print("BrainBox_IP and BrainBox_Port removed.")  # TODO - Delete debug message.
 				self.__brainbox_ip_address = None
 				self.__brainbox_port_number = None
 				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
@@ -388,4 +390,14 @@ class FoodBox:
 				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 				self.write_system_log(syslog)
 		else:
-			print("network_discovery No info. - This is a debug message. ")  # TODO - Delete this.
+			print("BrainBox_IP and BrainBox_Port removed.")  # TODO - Delete debug message.
+			self.__brainbox_ip_address = None
+			self.__brainbox_port_number = None
+			self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
+			self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=None)
+
+			logstr = "BrainBox_IP and BrainBox_Port removed."
+			logtype = MessageTypes.Information
+			logsev = 0
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
