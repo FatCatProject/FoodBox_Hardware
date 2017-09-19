@@ -10,3 +10,4 @@ class SystemSettings(Enum):
 	Scale_Scale = 6  # SCALE for HX711
 	Sync_Interval = 7  # Interval between pooling BrainBox
 	Last_Weight = 8  # The last weight before system went down
+	BrainBox_Port = 9  # TCP port number of BrainBox to communicate with
