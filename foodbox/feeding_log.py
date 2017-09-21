@@ -82,8 +82,11 @@ class FeedingLog:
 	def __set_start_weight(self, weight):
 		assert type(weight) is float or type(weight) is int, "weight is neither and int or a float, it is an %r" % type(
 				weight)
-		assert weight >= -5, "weight is negative: %r" % weight
-		self.__start_weight = weight
+		#assert weight >= -5, "weight is negative: %r" % weight
+		if weight<0:
+			self.__start_weight = 0
+		else:
+			self.__start_weight = weight
 		return
 
 	def get_end_weight(self):
