@@ -1,4 +1,5 @@
 import time
+import datetime
 from Hardware import LM393
 from Hardware import ULN2003
 from Hardware import HX711
@@ -17,6 +18,8 @@ from zeroconf import ServiceStateChange
 from zeroconf import Zeroconf
 from zeroconf import ZeroconfServiceTypes
 
+import json
+import requests
 
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
@@ -56,7 +59,7 @@ class FoodBox:
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = int(self.__get_system_setting(SystemSettings.Max_Open_Time) or 600)
 		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
-		self.__sync_last = time.localtime()
+		self.__sync_last = time.localtime()  # TODO - Sync on startup?
 		self.__presentation_mode = presentation_mode
 
 		self.__buzzer = None  # TODO
@@ -175,21 +178,87 @@ class FoodBox:
 
 		:return synced_uid: A Tuple[str] of uids that were synced, or failed to sync.
 		:return success: Did it sync successfully or not.
-		:rtype synced_uid: Tuple[str]
+		:rtype sync_uid: Tuple[str]
 		:rtype success: bool
 		"""
 
 		cn = FoodBoxDB()  # type: FoodBoxDB
-		uid_to_sync = cn.get_not_synced_feeding_logs()  # type: list[FeedingLog]
+		logs_to_sync = cn.get_not_synced_feeding_logs()  # type: list[FeedingLog]
 		del cn
-		synced_uid = tuple([log.get_id() for log in uid_to_sync])  # type: tuple[str]
+		sync_uid = tuple([log.get_id() for log in logs_to_sync])  # type: tuple[str]
+		success = False  # type: bool
+
+		if not logs_to_sync:
+			success = True
+			logstr = "Sync with BrainBox succeeded - Nothing to sync."
+			logtype = MessageTypes.Information
+			logsev = 0
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return sync_uid, success
 
 		if self.__brainbox_ip_address is None or self.__brainbox_port_number is None:
-			return synced_uid, False
+			success = False
+			logstr = "Sync with BrainBox failed - BrainBox not recognized."
+			logtype = MessageTypes.Error
+			logsev = 1
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return sync_uid, success
 
-		success = False  # type: bool
-		# TODO - Sync with brainbox
-		return synced_uid, success
+		logs_list = []
+		for log in logs_to_sync:
+			tmp_open_time = log.get_open_time()  # type: time.struct_time
+			tmp_open_datetime = datetime.datetime(
+				tmp_open_time.tm_year, tmp_open_time.tm_mon, tmp_open_time.tm_mday, tmp_open_time.tm_hour,
+				tmp_open_time.tm_min, tmp_open_time.tm_sec
+			)
+			tmp_close_time = log.get_close_time()  # type: time.struct_time
+			tmp_close_datetime = datetime.datetime(
+				tmp_close_time.tm_year, tmp_close_time.tm_mon, tmp_close_time.tm_mday, tmp_close_time.tm_hour,
+				tmp_close_time.tm_min, tmp_close_time.tm_sec
+			)
+			tmp_log_dict = {
+				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
+				"open_time": str(tmp_open_datetime), "close_time": str(tmp_close_datetime),
+				"start_weight": log.get_start_weight(), "end_weight": log.get_end_weight()
+			}
+			logs_list.append(tmp_log_dict)
+
+		payload = {"box_id": self.__foodbox_id, "feeding_logs": logs_list}
+		url = "{0}:{1}".format(socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number)
+		print("payload: {}".format(payload))  # TODO - Delete debug message
+		print("url: {}".format(url))  # TODO - Delete debug message
+
+		brainbox_response = requests.post(url=url, json=payload)
+
+		if brainbox_response.status_code != 200:
+			success = False
+			logstr = "Sync with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
+			logtype = MessageTypes.Error
+			logsev = 1
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return sync_uid, success
+
+		response_obj = json.loads(brainbox_response.text)
+
+		confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
+		print("confirmed ids: {}".format(confirmed_ids))  # TODO - Delete debug message
+		self.mark_feeding_logs_synced(confirmed_ids)
+
+		success = True
+		logstr = "Sync with brainbox succeeded."
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+		self.write_system_log(syslog)
+		self.__sync_last = time.localtime()
+
+		return sync_uid, success
 
 	def start_mainloop(self):
 		"""The main loop of reading card, checking access and writing logs.
@@ -300,17 +369,6 @@ class FoodBox:
 			del feedinglog
 			if self.__sync_on_change:
 				sync_uid, sync_success = self.sync_with_brainbox()
-				if sync_success:
-					logstr = "Sync with brainbox succeeded."
-					logtype = MessageTypes.Information
-					logsev = 0
-				else:
-					logstr = "Sync with brainbox failed."
-					logtype = MessageTypes.Error
-					logsev = 1
-				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-				self.write_system_log(syslog)
-				self.__sync_last = time.localtime()
 
 			if False:  # Ignore me.
 				break
