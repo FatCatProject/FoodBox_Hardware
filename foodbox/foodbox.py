@@ -228,7 +228,7 @@ class FoodBox:
 			logs_list.append(tmp_log_dict)
 
 		payload = {"box_id": self.__foodbox_id, "feeding_logs": logs_list}
-		url = "{0}:{1}".format(socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number)
+		url = "{0}:{1}/bbox/pushlogs/".format(socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number)
 		print("payload: {}".format(payload))  # TODO - Delete debug message
 		print("url: {}".format(url))  # TODO - Delete debug message
 
