@@ -21,6 +21,7 @@ from zeroconf import ZeroconfServiceTypes
 import json
 import requests
 
+
 class FoodBox:
 	__buzzer = None  # TODO - Add a buzzer
 	__proximity = None  # type: LM393  # LM393 proximity sensor
@@ -228,9 +229,11 @@ class FoodBox:
 			logs_list.append(tmp_log_dict)
 
 		payload = {"box_id": self.__foodbox_id, "feeding_logs": logs_list}
-		url = "{0}:{1}/bbox/pushlogs/".format(socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number)
-		print("payload: {}".format(payload))  # TODO - Delete debug message
+		url = "http://{0}:{1}/bbox/pushlogs/".format(
+			socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number
+		)
 		print("url: {}".format(url))  # TODO - Delete debug message
+		print("payload: {}\n\n".format(payload))  # TODO - Delete debug message
 
 		brainbox_response = requests.post(url=url, json=payload)
 
@@ -247,7 +250,7 @@ class FoodBox:
 		response_obj = json.loads(brainbox_response.text)
 
 		confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
-		print("confirmed ids: {}".format(confirmed_ids))  # TODO - Delete debug message
+		print("confirmed ids: {}\n\n".format(confirmed_ids))  # TODO - Delete debug message
 		self.mark_feeding_logs_synced(confirmed_ids)
 
 		success = True
