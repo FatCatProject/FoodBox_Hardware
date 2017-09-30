@@ -301,7 +301,7 @@ class FoodBox:
 
 		response_obj = json.loads(brainbox_response.text)
 		admin_cards = tuple(response_obj["admin_cards"])
-		modified_cards = ()  # tuple(response_obj["modified_cards"])
+		modified_cards = tuple(response_obj["modified_cards"])
 		new_cards = tuple(response_obj["new_cards"])
 		print("admin cards: {}\n\n".format(admin_cards))  # TODO - Delete debug message
 		print("modified cards: {}\n\n".format(modified_cards))  # TODO - Delete debug message
