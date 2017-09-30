@@ -47,7 +47,7 @@ class FoodBox:
 
 	# End of settings section
 
-	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = False):
+	def __init__(self, presentation_mode: bool = False, sync_on_change: bool = True):
 		self.__last_weight = float(self.__get_system_setting(SystemSettings.Last_Weight) or 0)
 		if self.__last_weight < 0:
 			self.__last_weight = 0
@@ -301,7 +301,7 @@ class FoodBox:
 
 		response_obj = json.loads(brainbox_response.text)
 		admin_cards = tuple(response_obj["admin_cards"])
-		modified_cards = tuple(response_obj["modified_cards"])
+		modified_cards = ()  # tuple(response_obj["modified_cards"])
 		new_cards = tuple(response_obj["new_cards"])
 		print("admin cards: {}\n\n".format(admin_cards))  # TODO - Delete debug message
 		print("modified cards: {}\n\n".format(modified_cards))  # TODO - Delete debug message
