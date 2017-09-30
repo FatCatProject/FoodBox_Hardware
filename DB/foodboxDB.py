@@ -146,6 +146,14 @@ class FoodBoxDB:
 		self.c.execute('DELETE FROM cards WHERE card_id = ?', (cardID,))
 		self.conn.commit()
 
+	def set_card_name(self, cardID: str, new_name: str):
+		card = self.get_card_byID(cardID=cardID)
+		assert card is not None
+		# Using the *wrong way* to pass arguments for consistency with the rest of the file.
+		self.c.execute('UPDATE cards SET card_name = ? WHERE card_id = ?', (new_name, cardID))
+		self.conn.commit()
+		pass
+
 	### END of Card functiones ###
 
 	### Start system_settings functiones ###
