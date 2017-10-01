@@ -30,7 +30,7 @@ class FoodBoxDB:
 		cardData = self.c.fetchall()
 		if len(cardData) <= 0:
 			return None
-		print(cardData)  # TODO - Delete this print after fixing the problem with index out of bounds
+		# print(cardData)
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
 		return card
 
@@ -310,7 +310,7 @@ class FoodBoxDB:
 													myLog.get_message_type().name,
 													myLog.get_severity()))
 		log_rowid = self.c.lastrowid
-		print(log_rowid)
+		# print(log_rowid)
 		self.conn.commit()
 		return False
 
@@ -348,9 +348,9 @@ class FoodBoxDB:
 ### system_logs functions ###
 
 ### END of system_logs functions ###
-"""
-Printings and tests
-"""
+# """
+# Printings and tests
+# """
 #fbdb = FoodBoxDB()
 ##fbdb.add_card('138-236-209-167-111')
 # sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
