@@ -161,7 +161,7 @@ class FoodBoxDB:
 		"""Function returns a value of a specific setting from enums that are available:
 			the input must be "SystemSettings.key_name"
 			key names: BrainBox_IP / BrainBox_Port / FoodBox_ID / FoodBox_Name / Max_Open_Time / Scale_Offset /
-			Scale_Scale / Sync_Interval
+			Scale_Scale / Sync_Interval / Last_Weight / Last_Purge
 			If the key_name is still not written in the DB or has no value it returns None
 		"""
 		self.c.execute('SELECT * FROM system_settings WHERE key_name = ?', (setting.name,))
