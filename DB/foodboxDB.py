@@ -348,6 +348,27 @@ class FoodBoxDB:
 ### system_logs functions ###
 
 ### END of system_logs functions ###
+
+	def purge_logs(self):
+		self.c.execute('SELECT count(*) AS row_count FROM system_logs')
+		row_count = self.c.fetchone()
+		print("system_log count: {}".format(row_count[0]))  # TODO - Delete debug message
+		if row_count[0] >= 1000:
+			self.c.execute(
+				'DELETE FROM system_logs WHERE rowid IN (SELECT rowid FROM system_logs ORDER BY rowid ASC LIMIT 1000)'
+			)
+
+		self.c.execute('SELECT count(*) AS row_count FROM feeding_logs WHERE synced = 1')
+		row_count = self.c.fetchone()
+		print("feeding_log count: {}".format(row_count[0]))  # TODO - Delete debug message
+		if row_count[0] >= 1000:
+			self.c.execute(
+				'DELETE FROM feeding_logs WHERE rowid IN (SELECT rowid FROM feeding_logs WHERE synced = 1 ORDER BY rowid ASC LIMIT 1000)'
+			)
+
+		self.conn.commit()
+		return True
+
 # """
 # Printings and tests
 # """
