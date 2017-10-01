@@ -44,6 +44,7 @@ class FoodBox:
 	__sync_on_change = False  # type: bool  # Should sync with the BrainBox on every FeedingLog?
 	__lid_open = False  # type: bool
 	__last_weight = None  # type: float
+	__last_purge = None  # type: time.struct_time  # When were the logs last purged
 
 	# End of settings section
 
@@ -62,6 +63,9 @@ class FoodBox:
 		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
 		self.__sync_last = time.localtime(0)
 		self.__presentation_mode = presentation_mode
+		self.__last_purge = self.__get_system_setting(SystemSettings.Last_Purge)
+		if self.__last_purge is None:
+			self.purge_logs()
 
 		self.__buzzer = None  # TODO
 		self.__proximity = LM393(pin_num=17)
@@ -341,7 +345,20 @@ class FoodBox:
 		return tuple(synced_cards), success
 
 	def purge_logs(self):
-		pass
+		cn = FoodBoxDB()  # type: FoodBoxDB
+		cn.purge_logs()
+		self.__last_purge = time.localtime()
+		del cn
+
+		self.__set_system_setting(SystemSettings.Last_Purge, self.__last_purge)
+		logstr = "Logs purged."
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(
+			message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev, card=None)
+		self.write_system_log(syslog)
+
+		return True
 
 	def start_mainloop(self):
 		"""The main loop of reading card, checking access and writing logs.
@@ -353,6 +370,9 @@ class FoodBox:
 				sync_uid, sync_success = self.sync_with_brainbox()
 				if sync_success:
 					self.sync_cards_from_brainbox()
+
+				if time.time() - time.mktime(self.__last_purge) >= 1440:
+					self.purge_logs()
 
 			carduid = self.__rfid_scanner.get_uid()
 			if carduid is None:
