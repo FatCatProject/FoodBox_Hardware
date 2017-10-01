@@ -60,7 +60,7 @@ class FoodBox:
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = int(self.__get_system_setting(SystemSettings.Max_Open_Time) or 600)
 		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
-		self.__sync_last = time.localtime()  # TODO - Sync on startup?
+		self.__sync_last = time.localtime(0)
 		self.__presentation_mode = presentation_mode
 
 		self.__buzzer = None  # TODO
@@ -187,7 +187,7 @@ class FoodBox:
 		logs_to_sync = cn.get_not_synced_feeding_logs()  # type: list[FeedingLog]
 		del cn
 		sync_uid = tuple([log.get_id() for log in logs_to_sync])  # type: tuple[str]
-		success = False  # type: bool
+		# success = False  # type: bool
 
 		if not logs_to_sync:
 			success = True
@@ -232,8 +232,8 @@ class FoodBox:
 		url = "http://{0}:{1}/bbox/pushlogs/".format(
 			socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number
 		)
-		print("url: {}".format(url))  # TODO - Delete debug message
-		print("payload: {}\n\n".format(payload))  # TODO - Delete debug message
+		print("url: {}".format(url))  # Debug message
+		# print("payload: {}\n\n".format(payload))  # Debug message
 
 		brainbox_response = requests.post(url=url, json=payload)
 
@@ -250,7 +250,7 @@ class FoodBox:
 		response_obj = json.loads(brainbox_response.text)
 
 		confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
-		print("confirmed ids: {}\n\n".format(confirmed_ids))  # TODO - Delete debug message
+		# print("confirmed ids: {}\n\n".format(confirmed_ids))  # Debug message
 		self.mark_feeding_logs_synced(confirmed_ids)
 
 		success = True
@@ -303,9 +303,9 @@ class FoodBox:
 		admin_cards = tuple(response_obj["admin_cards"])
 		modified_cards = tuple(response_obj["modified_cards"])
 		new_cards = tuple(response_obj["new_cards"])
-		print("admin cards: {}\n\n".format(admin_cards))  # TODO - Delete debug message
-		print("modified cards: {}\n\n".format(modified_cards))  # TODO - Delete debug message
-		print("new cards: {}\n\n".format(new_cards))  # TODO - Delete debug message
+		# print("admin cards: {}\n\n".format(admin_cards))  # Debug message
+		# print("modified cards: {}\n\n".format(modified_cards))  # Debug message
+		# print("new cards: {}\n\n".format(new_cards))  # Debug message
 
 		cn = FoodBoxDB()  # type: FoodBoxDB
 		for admin_card in admin_cards:
@@ -339,6 +339,9 @@ class FoodBox:
 		self.__sync_last = time.localtime()
 
 		return tuple(synced_cards), success
+
+	def purge_logs(self):
+		pass
 
 	def start_mainloop(self):
 		"""The main loop of reading card, checking access and writing logs.
@@ -481,7 +484,7 @@ class FoodBox:
 				self.write_system_log(syslog)
 
 			elif state_change is ServiceStateChange.Removed:  # We never get inside here.
-				print("BrainBox_IP and BrainBox_Port removed.")  # TODO - Delete debug message.
+				print("BrainBox_IP and BrainBox_Port removed.")  # Debug message.
 				self.__brainbox_ip_address = None
 				self.__brainbox_port_number = None
 				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
@@ -493,7 +496,7 @@ class FoodBox:
 				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 				self.write_system_log(syslog)
 		else:
-			print("BrainBox_IP and BrainBox_Port removed.")  # TODO - Delete debug message.
+			print("BrainBox_IP and BrainBox_Port removed.")  # Debug message
 			self.__brainbox_ip_address = None
 			self.__brainbox_port_number = None
 			self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=None)
