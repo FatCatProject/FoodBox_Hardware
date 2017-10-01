@@ -349,44 +349,7 @@ class FoodBox:
 			if time.time() - time.mktime(self.__sync_last) >= 600:  # self.__sync_interval instead of 600
 				sync_uid, sync_success = self.sync_with_brainbox()
 				if sync_success:
-					logstr = "Sync with brainbox succeeded."
-					logtype = MessageTypes.Information
-					logsev = 0
-				else:
-					logstr = "Sync with brainbox failed."
-					logtype = MessageTypes.Error
-					logsev = 1
-				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-				self.write_system_log(syslog)
-				self.__sync_last = time.localtime()
-
-				if sync_success:
-					if self.mark_feeding_logs_synced(uids=sync_uid):
-						logstr = "FeedingLogs marked synced successfully."
-						logtype = MessageTypes.Information
-						logsev = 0
-						deleted_logs = True
-					else:
-						logstr = "Failed to mark FeedingLogs synced."
-						logtype = MessageTypes.Error
-						logsev = 1
-						deleted_logs = False
-					syslog = SystemLog(
-						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-					self.write_system_log(syslog)
-
-					if deleted_logs:
-						if self.delete_synced_feeding_logs():
-							logstr = "FeedingLogs marked synced were deleted successfully."
-							logtype = MessageTypes.Information
-							logsev = 0
-						else:
-							logstr = "Failed to delete FeedingLogs marked as synced."
-							logtype = MessageTypes.Error
-							logsev = 1
-						syslog = SystemLog(
-							message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-						self.write_system_log(syslog)
+					self.sync_cards_from_brainbox()
 
 			carduid = self.__rfid_scanner.get_uid()
 			if carduid is None:
