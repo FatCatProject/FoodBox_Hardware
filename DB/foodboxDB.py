@@ -30,7 +30,7 @@ class FoodBoxDB:
 		cardData = self.c.fetchall()
 		if len(cardData) <= 0:
 			return None
-		print(cardData)  # TODO - Delete this print after fixing the problem with index out of bounds
+		# print(cardData)
 		card = RFIDCard(cardData[0][0], cardData[0][2], cardData[0][1] == 1)
 		return card
 
@@ -146,6 +146,14 @@ class FoodBoxDB:
 		self.c.execute('DELETE FROM cards WHERE card_id = ?', (cardID,))
 		self.conn.commit()
 
+	def set_card_name(self, cardID: str, new_name: str):
+		card = self.get_card_byID(cardID=cardID)
+		assert card is not None
+		# Using the *wrong way* to pass arguments for consistency with the rest of the file.
+		self.c.execute('UPDATE cards SET card_name = ? WHERE card_id = ?', (new_name, cardID))
+		self.conn.commit()
+		pass
+
 	### END of Card functiones ###
 
 	### Start system_settings functiones ###
@@ -153,7 +161,7 @@ class FoodBoxDB:
 		"""Function returns a value of a specific setting from enums that are available:
 			the input must be "SystemSettings.key_name"
 			key names: BrainBox_IP / BrainBox_Port / FoodBox_ID / FoodBox_Name / Max_Open_Time / Scale_Offset /
-			Scale_Scale / Sync_Interval
+			Scale_Scale / Sync_Interval / Last_Weight / Last_Purge
 			If the key_name is still not written in the DB or has no value it returns None
 		"""
 		self.c.execute('SELECT * FROM system_settings WHERE key_name = ?', (setting.name,))
@@ -302,7 +310,7 @@ class FoodBoxDB:
 													myLog.get_message_type().name,
 													myLog.get_severity()))
 		log_rowid = self.c.lastrowid
-		print(log_rowid)
+		# print(log_rowid)
 		self.conn.commit()
 		return False
 
@@ -340,9 +348,30 @@ class FoodBoxDB:
 ### system_logs functions ###
 
 ### END of system_logs functions ###
-"""
-Printings and tests
-"""
+
+	def purge_logs(self):
+		self.c.execute('SELECT count(*) AS row_count FROM system_logs')
+		row_count = self.c.fetchone()
+		print("system_log count: {}".format(row_count[0]))  # TODO - Delete debug message
+		if row_count[0] >= 1000:
+			self.c.execute(
+				'DELETE FROM system_logs WHERE rowid IN (SELECT rowid FROM system_logs ORDER BY rowid ASC LIMIT 1000)'
+			)
+
+		self.c.execute('SELECT count(*) AS row_count FROM feeding_logs WHERE synced = 1')
+		row_count = self.c.fetchone()
+		print("feeding_log count: {}".format(row_count[0]))  # TODO - Delete debug message
+		if row_count[0] >= 1000:
+			self.c.execute(
+				'DELETE FROM feeding_logs WHERE rowid IN (SELECT rowid FROM feeding_logs WHERE synced = 1 ORDER BY rowid ASC LIMIT 1000)'
+			)
+
+		self.conn.commit()
+		return True
+
+# """
+# Printings and tests
+# """
 #fbdb = FoodBoxDB()
 ##fbdb.add_card('138-236-209-167-111')
 # sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
