@@ -355,9 +355,10 @@ class FoodBox:
 			socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number, self.__foodbox_id
 		)
 		print("url: {}".format(url))  # Debug message
+		payload = {"currect_weight": self.__last_weight}
 		# print("payload: {}\n\n".format(payload))  # Debug message
 
-		brainbox_response = requests.get(url=url)
+		brainbox_response = requests.get(url=url, json=payload)
 
 		if brainbox_response.status_code != 200:
 			success = False
@@ -475,11 +476,13 @@ class FoodBox:
 			end_weight = self.__scale.get_units()
 			print("End weight is: ", end_weight)
 			if admin_card:
+				self.admin_refill(start_weight=start_weight, end_weight=end_weight, card_uid=carduid)
 				continue
 			feedinglog = FeedingLog(
 				card=card, open_time=open_time, close_time=close_time, start_weight=start_weight, end_weight=end_weight,
 				feeding_id=uuid.uuid4().hex)
 			self.write_feeding_log(feedinglog)
+			self.__last_weight = end_weight
 			self.__set_system_setting(SystemSettings.Last_Weight, end_weight)
 			print("Feeding log created: ", feedinglog)
 			del feedinglog
@@ -565,8 +568,8 @@ class FoodBox:
 				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 				self.write_system_log(syslog)
 
-				# if not self.__said_hi_to_brainbox:
-				# 	self.sync_foodbox_with_brainbox()
+			# if not self.__said_hi_to_brainbox:
+			# 	self.sync_foodbox_with_brainbox()
 			elif state_change is ServiceStateChange.Removed:  # We never get inside here, because it always goes to else
 				print("BrainBox_IP and BrainBox_Port removed.")  # Debug message.
 				self.__brainbox_ip_address = None
@@ -591,3 +594,19 @@ class FoodBox:
 			logsev = 0
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 			self.write_system_log(syslog)
+
+	def admin_refill(self, start_weight: float, end_weight: float, card_uid: str):
+		logstr = "ADMIN refilled the box from: {0} to {1}.".format(start_weight, end_weight)
+		logtype = MessageTypes.Information
+		logsev = 0
+		syslog = SystemLog(
+			message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev, card=card_uid)
+		self.write_system_log(syslog)
+		self.__last_weight = end_weight
+		self.__set_system_setting(SystemSettings.Last_Weight, end_weight)
+
+		sync_success = self.sync_foodbox_with_brainbox()
+		if sync_success:
+			sync_uid, sync_success = self.sync_with_brainbox()
+		if sync_success:
+			self.sync_cards_from_brainbox()
