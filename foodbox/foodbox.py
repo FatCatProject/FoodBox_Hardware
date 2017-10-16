@@ -376,7 +376,7 @@ class FoodBox:
 			socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number, self.__foodbox_id
 		)
 		print("url: {}".format(url))  # Debug message
-		payload = {"currect_weight": self.__last_weight}
+		payload = {"current_weight": self.__last_weight}
 		# print("payload: {}\n\n".format(payload))  # Debug message
 
 		try:
