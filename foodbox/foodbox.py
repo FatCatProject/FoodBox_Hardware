@@ -242,7 +242,17 @@ class FoodBox:
 		print("url: {}".format(url))  # Debug message
 		# print("payload: {}\n\n".format(payload))  # Debug message
 
-		brainbox_response = requests.post(url=url, json=payload)
+		try:
+			brainbox_response = requests.post(url=url, json=payload)
+		except requests.exceptions.RequestException as e:
+			success = False
+			logstr = "Sync with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 2
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return sync_uid, success
 
 		if brainbox_response.status_code != 200:
 			success = False
@@ -294,7 +304,18 @@ class FoodBox:
 		url = "http://{0}:{1}/bbox/pullcards/{2}".format(
 			socket.inet_ntoa(self.__brainbox_ip_address), self.__brainbox_port_number, self.__foodbox_id
 		)
-		brainbox_response = requests.get(url=url)
+
+		try:
+			brainbox_response = requests.get(url=url)
+		except requests.exceptions.RequestException as e:
+			success = False
+			logstr = "Sync cards with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 2
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return tuple(synced_cards), success
 
 		if brainbox_response.status_code != 200:
 			success = False
@@ -358,7 +379,17 @@ class FoodBox:
 		payload = {"currect_weight": self.__last_weight}
 		# print("payload: {}\n\n".format(payload))  # Debug message
 
-		brainbox_response = requests.get(url=url, json=payload)
+		try:
+			brainbox_response = requests.get(url=url, json=payload)
+		except requests.exceptions.RequestException as e:
+			success = False
+			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 2
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			return success
 
 		if brainbox_response.status_code != 200:
 			success = False
