@@ -244,7 +244,22 @@ class FoodBox:
 
 		try:
 			brainbox_response = requests.post(url=url, json=payload)
-		except requests.exceptions.RequestException as e:
+
+			if brainbox_response.status_code != 200:
+				success = False
+				logstr = "Sync with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
+				logtype = MessageTypes.Error
+				logsev = 1
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
+				self.__sync_last = time.localtime()
+				return sync_uid, success
+
+			response_obj = json.loads(brainbox_response.text)
+			confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
+			# print("confirmed ids: {}\n\n".format(confirmed_ids))  # Debug message
+			self.mark_feeding_logs_synced(confirmed_ids)
+		except (json.decoder.JSONDecodeError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
 			logstr = "Sync with brainbox failed - exception = {}.".format(e.args)
 			logtype = MessageTypes.Error
@@ -253,22 +268,6 @@ class FoodBox:
 			self.write_system_log(syslog)
 			self.__sync_last = time.localtime()
 			return sync_uid, success
-
-		if brainbox_response.status_code != 200:
-			success = False
-			logstr = "Sync with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
-			logtype = MessageTypes.Error
-			logsev = 1
-			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-			self.write_system_log(syslog)
-			self.__sync_last = time.localtime()
-			return sync_uid, success
-
-		response_obj = json.loads(brainbox_response.text)
-
-		confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
-		# print("confirmed ids: {}\n\n".format(confirmed_ids))  # Debug message
-		self.mark_feeding_logs_synced(confirmed_ids)
 
 		success = True
 		logstr = "Sync with brainbox succeeded."
@@ -307,7 +306,50 @@ class FoodBox:
 
 		try:
 			brainbox_response = requests.get(url=url)
-		except requests.exceptions.RequestException as e:
+
+			if brainbox_response.status_code != 200:
+				success = False
+				logstr = "Sync cards with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
+				logtype = MessageTypes.Error
+				logsev = 1
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
+				self.__sync_last = time.localtime()
+				return tuple(synced_cards), success
+
+			response_obj = json.loads(brainbox_response.text)
+			admin_cards = tuple(response_obj["admin_cards"])
+			modified_cards = tuple(response_obj["modified_cards"])
+			new_cards = tuple(response_obj["new_cards"])
+			# print("admin cards: {}\n\n".format(admin_cards))  # Debug message
+			# print("modified cards: {}\n\n".format(modified_cards))  # Debug message
+			# print("new cards: {}\n\n".format(new_cards))  # Debug message
+
+			cn = FoodBoxDB()  # type: FoodBoxDB
+			for admin_card in admin_cards:
+				tmp_id = admin_card["card_id"]
+				tmp_active = admin_card["active"]
+				cn.set_state(cardID=tmp_id, newState=tmp_active)
+				cn.set_card_name(cardID=tmp_id, new_name="ADMIN")
+				synced_cards.append(tmp_id)
+			for modified_card in modified_cards:
+				tmp_id = modified_card["card_id"]
+				tmp_active = modified_card["active"]
+				tmp_name = modified_card["card_name"]
+				cn.set_state(cardID=tmp_id, newState=tmp_active)
+				cn.set_card_name(cardID=tmp_id, new_name=tmp_name)
+				synced_cards.append(tmp_id)
+			for new_card in new_cards:
+				tmp_id = new_card["card_id"]
+				tmp_active = new_card["active"]
+				tmp_name = new_card["card_name"]
+				cn.set_state(cardID=tmp_id, newState=tmp_active)
+				cn.set_card_name(cardID=tmp_id, new_name=tmp_name)
+				synced_cards.append(tmp_id)
+
+			del cn
+			success = True
+		except (json.decoder.JSONDecodeError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
 			logstr = "Sync cards with brainbox failed - exception = {}.".format(e.args)
 			logtype = MessageTypes.Error
@@ -317,48 +359,6 @@ class FoodBox:
 			self.__sync_last = time.localtime()
 			return tuple(synced_cards), success
 
-		if brainbox_response.status_code != 200:
-			success = False
-			logstr = "Sync cards with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
-			logtype = MessageTypes.Error
-			logsev = 1
-			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-			self.write_system_log(syslog)
-			self.__sync_last = time.localtime()
-			return tuple(synced_cards), success
-
-		response_obj = json.loads(brainbox_response.text)
-		admin_cards = tuple(response_obj["admin_cards"])
-		modified_cards = tuple(response_obj["modified_cards"])
-		new_cards = tuple(response_obj["new_cards"])
-		# print("admin cards: {}\n\n".format(admin_cards))  # Debug message
-		# print("modified cards: {}\n\n".format(modified_cards))  # Debug message
-		# print("new cards: {}\n\n".format(new_cards))  # Debug message
-
-		cn = FoodBoxDB()  # type: FoodBoxDB
-		for admin_card in admin_cards:
-			tmp_id = admin_card["card_id"]
-			tmp_active = admin_card["active"]
-			cn.set_state(cardID=tmp_id, newState=tmp_active)
-			cn.set_card_name(cardID=tmp_id, new_name="ADMIN")
-			synced_cards.append(tmp_id)
-		for modified_card in modified_cards:
-			tmp_id = modified_card["card_id"]
-			tmp_active = modified_card["active"]
-			tmp_name = modified_card["card_name"]
-			cn.set_state(cardID=tmp_id, newState=tmp_active)
-			cn.set_card_name(cardID=tmp_id, new_name=tmp_name)
-			synced_cards.append(tmp_id)
-		for new_card in new_cards:
-			tmp_id = new_card["card_id"]
-			tmp_active = new_card["active"]
-			tmp_name = new_card["card_name"]
-			cn.set_state(cardID=tmp_id, newState=tmp_active)
-			cn.set_card_name(cardID=tmp_id, new_name=tmp_name)
-			synced_cards.append(tmp_id)
-
-		del cn
-		success = True
 		logstr = "Sync cards with brainbox succeeded."
 		logtype = MessageTypes.Information
 		logsev = 0
@@ -381,7 +381,21 @@ class FoodBox:
 
 		try:
 			brainbox_response = requests.get(url=url, json=payload)
-		except requests.exceptions.RequestException as e:
+
+			if brainbox_response.status_code != 200:
+				success = False
+				logstr = "Sync FoodBox with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
+				logtype = MessageTypes.Error
+				logsev = 1
+				syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+				self.write_system_log(syslog)
+				self.__sync_last = time.localtime()
+				return success
+
+			response_obj = json.loads(brainbox_response.text)
+			response_box_name = response_obj["foodbox_name"]
+		# print("response_box_name: {}\n\n".format(response_box_name))  # Debug message
+		except (json.decoder.JSONDecodeError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
 			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(e.args)
 			logtype = MessageTypes.Error
@@ -391,20 +405,6 @@ class FoodBox:
 			self.__sync_last = time.localtime()
 			return success
 
-		if brainbox_response.status_code != 200:
-			success = False
-			logstr = "Sync FoodBox with brainbox failed - status_code = {}.".format(brainbox_response.status_code)
-			logtype = MessageTypes.Error
-			logsev = 1
-			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
-			self.write_system_log(syslog)
-			self.__sync_last = time.localtime()
-			return success
-
-		response_obj = json.loads(brainbox_response.text)
-
-		response_box_name = response_obj["foodbox_name"]
-		# print("response_box_name: {}\n\n".format(response_box_name))  # Debug message
 		self.__foodbox_name = response_box_name
 		self.__set_system_setting(SystemSettings.FoodBox_Name, self.__foodbox_name)
 
