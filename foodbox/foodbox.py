@@ -245,7 +245,7 @@ class FoodBox:
 		print("payload: {}\n\n".format(payload))  # Debug message
 
 		try:
-			brainbox_response = requests.post(url=url, json=payload)
+			brainbox_response = requests.post(url=url, json=payload, headers={"connection": "close"})
 
 			if brainbox_response.status_code != 200:
 				success = False
@@ -256,11 +256,15 @@ class FoodBox:
 				print("syslog: {}".format(syslog))  # Debug message
 				self.write_system_log(syslog)
 				self.__sync_last = time.localtime()
+				if "brainbox_response" in vars():
+					brainbox_response.close()
 				return sync_uid, success
 
 			response_obj = json.loads(brainbox_response.text)
 			confirmed_ids = tuple(response_obj["confirm_ids"])  # TODO - Compare against sync_uid
 			print("confirmed ids: {}\n\n".format(confirmed_ids))  # Debug message
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 			self.mark_feeding_logs_synced(confirmed_ids)
 		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
@@ -271,6 +275,8 @@ class FoodBox:
 			print("syslog: {}".format(syslog))  # Debug message
 			self.write_system_log(syslog)
 			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 			return sync_uid, success
 
 		success = True
@@ -282,6 +288,8 @@ class FoodBox:
 		self.write_system_log(syslog)
 		self.__sync_last = time.localtime()
 
+		if "brainbox_response" in vars():
+			brainbox_response.close()
 		return sync_uid, success
 
 	def sync_cards_from_brainbox(self):
@@ -311,7 +319,7 @@ class FoodBox:
 		)
 
 		try:
-			brainbox_response = requests.get(url=url)
+			brainbox_response = requests.get(url=url, headers={"connection": "close"})
 
 			if brainbox_response.status_code != 200:
 				success = False
@@ -322,6 +330,8 @@ class FoodBox:
 				print("syslog: {}".format(syslog))  # Debug message
 				self.write_system_log(syslog)
 				self.__sync_last = time.localtime()
+				if "brainbox_response" in vars():
+					brainbox_response.close()
 				return tuple(synced_cards), success
 
 			response_obj = json.loads(brainbox_response.text)
@@ -356,6 +366,8 @@ class FoodBox:
 
 			del cn
 			success = True
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
 			logstr = "Sync cards with brainbox failed - exception = {}.".format(e.args)
@@ -365,6 +377,8 @@ class FoodBox:
 			print("syslog: {}".format(syslog))  # Debug message
 			self.write_system_log(syslog)
 			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 			return tuple(synced_cards), success
 
 		logstr = "Sync cards with brainbox succeeded."
@@ -375,6 +389,8 @@ class FoodBox:
 		self.write_system_log(syslog)
 		self.__sync_last = time.localtime()
 
+		if "brainbox_response" in vars():
+			brainbox_response.close()
 		return tuple(synced_cards), success
 
 	def sync_foodbox_with_brainbox(self):
@@ -389,7 +405,7 @@ class FoodBox:
 		print("payload: {}\n\n".format(payload))  # Debug message
 
 		try:
-			brainbox_response = requests.get(url=url, params=payload)
+			brainbox_response = requests.get(url=url, params=payload, headers={"connection": "close"})
 
 			if brainbox_response.status_code != 200:
 				success = False
@@ -400,11 +416,15 @@ class FoodBox:
 				print("syslog: {}".format(syslog))  # Debug message
 				self.write_system_log(syslog)
 				self.__sync_last = time.localtime()
+				if "brainbox_response" in vars():
+					brainbox_response.close()
 				return success
 
 			response_obj = json.loads(brainbox_response.text)
 			response_box_name = response_obj["foodbox_name"]
 			print("response_box_name: {}\n\n".format(response_box_name))  # Debug message
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
 			success = False
 			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(e.args)
@@ -414,6 +434,8 @@ class FoodBox:
 			print("syslog: {}".format(syslog))  # Debug message
 			self.write_system_log(syslog)
 			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
 			return success
 
 		self.__foodbox_name = response_box_name
@@ -430,6 +452,8 @@ class FoodBox:
 
 		if not self.__said_hi_to_brainbox:
 			self.__said_hi_to_brainbox = True
+		if "brainbox_response" in vars():
+			brainbox_response.close()
 		return success
 
 	def purge_logs(self):
