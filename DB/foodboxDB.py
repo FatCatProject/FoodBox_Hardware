@@ -245,7 +245,15 @@ class FoodBoxDB:
 		"""
 		Returns a tuple of synced feeding logs , the cards are objects inside the tuple
 		"""
-		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE synced=1')
+		query_str = [
+			"SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id",
+			"WHERE feeding_logs.synced='True'",
+			"OR feeding_logs.synced='1';"
+		]
+		self.c.execute(str.join(" ", query_str))
+		# self.c.execute(
+		# 	'SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE feeding_logs.synced=1'
+		# )
 		logData = self.c.fetchall()
 		# print(logData)
 		logs = []
@@ -260,7 +268,15 @@ class FoodBoxDB:
 		"""
 		Returns a tuple of synced feeding logs , the cards are objects inside the tuple
 		"""
-		self.c.execute('SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE synced=0')
+		query_str = [
+			"SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id",
+			"WHERE feeding_logs.synced='False'",
+			"OR feeding_logs.synced='0';"
+		]
+		self.c.execute(str.join(" ", query_str))
+		# self.c.execute(
+		# 	'SELECT * FROM feeding_logs JOIN cards ON feeding_logs.card_id=cards.card_id WHERE synced=0'
+		# )
 		logData = self.c.fetchall()
 		# print(logData)
 		logs = []
