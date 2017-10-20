@@ -137,7 +137,7 @@ class FoodBoxDB:
 		"""
 		Adding a new card with default state = Active
 		"""
-		self.set_state(cardID, 1==1)
+		self.set_state(cardID, 1 == 1)
 		self.conn.commit()
 
 	def delete_card(self, cardID: str):
@@ -195,19 +195,36 @@ class FoodBoxDB:
 		self.c.execute('SELECT * FROM feeding_logs WHERE feeding_id = ?', (logID,))
 		logData = self.c.fetchall()
 		card = self.get_card_byID(str(logData[0][1]))
-		myLog = FeedingLog(card, open_time=logData[0][2], close_time=logData[0][3], start_weight=logData[0][4],
-			end_weight=logData[0][5], feeding_id=logData[0][0], synced=(logData[0][6] == 1))
+		myLog = FeedingLog(
+			card, open_time=logData[0][2], close_time=logData[0][3], start_weight=logData[0][4],
+			end_weight=logData[0][5], feeding_id=logData[0][0], synced=(logData[0][6] == 1)
+		)
 		return myLog
 
 	def add_feeding_log(self, myLog: FeedingLog):
 		"""
 		Getting a feeding_log as an object and Adding it to the DB
 		"""
+		query_str = [
+			"INSERT INTO feeding_logs",
+			"(feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)",
+			"VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');"
+		]
 		self.c.execute(
-			'INSERT INTO feeding_logs (feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)'
-			' VALUES (?, ?, ?, ?, ?, ?, ?);', (
-			str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
-			time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(), myLog.get_synced()))
+			str.join(" ", query_str).format(
+				str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
+				time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(),
+				myLog.get_synced()
+			)
+		)
+		# self.c.execute(
+		# 	'INSERT INTO feeding_logs (feeding_id, card_id, open_time, close_time, start_weight, end_weight, synced)'
+		# 	' VALUES (?, ?, ?, ?, ?, ?, ?);', (
+		# 		str(myLog.get_id()), myLog.get_card().get_uid(), time.mktime(myLog.get_open_time()),
+		# 		time.mktime(myLog.get_close_time()), myLog.get_start_weight(), myLog.get_end_weight(),
+		# 		myLog.get_synced()
+		# 	)
+		# )
 		self.conn.commit()
 
 	def get_all_feeding_logs(self):
@@ -303,12 +320,22 @@ class FoodBoxDB:
 		:rtype log_rowid: Union[int, None]
 		"""
 		log_rowid = None  # type: int
-		self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES(\'{0}\', '
-					   '{1}, \'{2}\', \'{3}\', {4})'.format(str(myLog.get_card()),
-													time.mktime(myLog.get_time_stamp()),
-													str(myLog.get_message()),
-													myLog.get_message_type().name,
-													myLog.get_severity()))
+		query_str = [
+			"INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity)",
+			"VALUES('{0}', '{1}', '{2}', '{3}', {4});"
+		]
+		self.c.execute(
+			str.join(" ", query_str).format(
+				str(myLog.get_card()), time.mktime(myLog.get_time_stamp()), str(myLog.get_message()),
+				myLog.get_message_type().name, myLog.get_severity()
+			)
+		)
+		# self.c.execute('INSERT INTO system_logs (card_id, time_stamp, message, message_type, severity) VALUES(\'{0}\', '
+		# 			   '{1}, \'{2}\', \'{3}\', {4})'.format(str(myLog.get_card()),
+		# 	time.mktime(myLog.get_time_stamp()),
+		# 	str(myLog.get_message()),
+		# 	myLog.get_message_type().name,
+		# 	myLog.get_severity()))
 		log_rowid = self.c.lastrowid
 		# print(log_rowid)
 		self.conn.commit()
@@ -344,10 +371,9 @@ class FoodBoxDB:
 
 		return tuple(log_list)
 
+	### system_logs functions ###
 
-### system_logs functions ###
-
-### END of system_logs functions ###
+	### END of system_logs functions ###
 
 	def purge_logs(self):
 		self.c.execute('SELECT count(*) AS row_count FROM system_logs')
@@ -372,7 +398,7 @@ class FoodBoxDB:
 # """
 # Printings and tests
 # """
-#fbdb = FoodBoxDB()
+# fbdb = FoodBoxDB()
 ##fbdb.add_card('138-236-209-167-111')
 # sysLog = SystemLog('mymsg', None, None, time.gmtime(),MessageTypes.Information, 1)
 #
