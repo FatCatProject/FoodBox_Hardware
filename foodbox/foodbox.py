@@ -380,7 +380,7 @@ class FoodBox:
 		# print("payload: {}\n\n".format(payload))  # Debug message
 
 		try:
-			brainbox_response = requests.get(url=url, json=payload)
+			brainbox_response = requests.get(url=url, params=payload)
 
 			if brainbox_response.status_code != 200:
 				success = False
