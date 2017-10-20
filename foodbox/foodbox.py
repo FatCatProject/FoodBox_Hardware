@@ -61,7 +61,7 @@ class FoodBox:
 			self.__set_system_setting(SystemSettings.FoodBox_ID, self.__foodbox_id)
 		self.__foodbox_name = self.__get_system_setting(SystemSettings.FoodBox_Name) or socket.gethostname()
 		self.__max_open_time = int(self.__get_system_setting(SystemSettings.Max_Open_Time) or 600)
-		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 600)
+		self.__sync_interval = int(self.__get_system_setting(SystemSettings.Sync_Interval) or 60)
 		self.__sync_last = time.localtime(0)
 		self.__presentation_mode = presentation_mode
 		self.__last_purge = self.__get_system_setting(SystemSettings.Last_Purge)
@@ -480,7 +480,7 @@ class FoodBox:
 		:rtype: bool
 		"""
 		while True:
-			if time.time() - time.mktime(self.__sync_last) >= 60:  # fixme - self.__sync_interval instead of 60
+			if time.time() - time.mktime(self.__sync_last) >= self.__sync_interval:
 				sync_success = self.sync_foodbox_with_brainbox()
 				if sync_success:
 					sync_uid, sync_success = self.sync_with_brainbox()
