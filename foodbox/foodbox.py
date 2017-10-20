@@ -278,6 +278,18 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 			return sync_uid, success
+		except Exception as e:  # This probably means something very bad happened and we should really look into it.
+			success = False
+			logstr = "Sync with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 10
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			print("syslog: {}".format(syslog))  # Debug message
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
+			return sync_uid, success
 
 		success = True
 		logstr = "Sync with brainbox succeeded."
@@ -380,6 +392,18 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 			return tuple(synced_cards), success
+		except Exception as e:  # This probably means something very bad happened and we should really look into it.
+			success = False
+			logstr = "Sync cards with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 10
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			print("syslog: {}".format(syslog))  # Debug message
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
+			return tuple(synced_cards), success
 
 		logstr = "Sync cards with brainbox succeeded."
 		logtype = MessageTypes.Information
@@ -430,6 +454,18 @@ class FoodBox:
 			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(e.args)
 			logtype = MessageTypes.Error
 			logsev = 2
+			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
+			print("syslog: {}".format(syslog))  # Debug message
+			self.write_system_log(syslog)
+			self.__sync_last = time.localtime()
+			if "brainbox_response" in vars():
+				brainbox_response.close()
+			return success
+		except Exception as e:  # This probably means something very bad happened and we should really look into it.
+			success = False
+			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(e.args)
+			logtype = MessageTypes.Error
+			logsev = 10
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
 			print("syslog: {}".format(syslog))  # Debug message
 			self.write_system_log(syslog)
