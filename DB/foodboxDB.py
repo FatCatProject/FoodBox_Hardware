@@ -397,7 +397,7 @@ class FoodBoxDB:
 		print("system_log count: {}".format(row_count[0]))  # TODO - Delete debug message
 		if row_count[0] >= 1000:
 			self.c.execute(
-				'DELETE FROM system_logs WHERE rowid IN (SELECT rowid FROM system_logs ORDER BY rowid ASC LIMIT 1000)'
+				'DELETE FROM system_logs WHERE rowid NOT IN (SELECT rowid FROM system_logs ORDER BY rowid DESC LIMIT 1000)'
 			)
 
 		self.c.execute('SELECT count(*) AS row_count FROM feeding_logs WHERE synced = 1')
@@ -405,7 +405,7 @@ class FoodBoxDB:
 		print("feeding_log count: {}".format(row_count[0]))  # TODO - Delete debug message
 		if row_count[0] >= 1000:
 			self.c.execute(
-				'DELETE FROM feeding_logs WHERE rowid IN (SELECT rowid FROM feeding_logs WHERE synced = 1 ORDER BY rowid ASC LIMIT 1000)'
+				'DELETE FROM feeding_logs WHERE rowid NOT IN (SELECT rowid FROM feeding_logs WHERE synced = 1 ORDER BY rowid DESC LIMIT 1000)'
 			)
 
 		self.conn.commit()
