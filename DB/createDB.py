@@ -9,6 +9,8 @@ def create_foodboxDB():
 	Check if the DB was created successfully
 	If not throw exception
 	"""
+	print("create_foodboxDB() started.")  # Debug message
+
 	try:
 		conn = sqlite3.connect('foodboxDB.db')
 	except sqlite3.OperationalError:
@@ -52,3 +54,5 @@ def create_foodboxDB():
 	conn.commit()
 	c.close()
 	conn.close()
+
+	print("create_foodboxDB() ended.")  # Debug message
