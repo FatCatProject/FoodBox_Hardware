@@ -289,7 +289,8 @@ class FoodBox:
 			self.__sync_last = time.localtime()
 			if "brainbox_response" in vars():
 				brainbox_response.close()
-			return sync_uid, success
+			raise e
+			# return sync_uid, success
 
 		success = True
 		logstr = "Sync with brainbox succeeded."
@@ -403,6 +404,7 @@ class FoodBox:
 			self.__sync_last = time.localtime()
 			if "brainbox_response" in vars():
 				brainbox_response.close()
+			raise e
 			return tuple(synced_cards), success
 
 		logstr = "Sync cards with brainbox succeeded."
@@ -472,6 +474,7 @@ class FoodBox:
 			self.__sync_last = time.localtime()
 			if "brainbox_response" in vars():
 				brainbox_response.close()
+			raise e
 			return success
 
 		self.__foodbox_name = response_box_name
