@@ -643,7 +643,7 @@ class FoodBox:
 				print("IP: {0} - PORT: {1}".format(socket.inet_ntoa(info.address), info.port))
 				self.__brainbox_ip_address = info.address
 				self.__brainbox_port_number = info.port
-				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=info.address)
+				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=socket.inet_ntoa(info.address))
 				self.__set_system_setting(setting=SystemSettings.BrainBox_Port, value=info.port)
 
 				logstr = "BrainBox_IP and BrainBox_Port updates - {0}:{1}".format(
