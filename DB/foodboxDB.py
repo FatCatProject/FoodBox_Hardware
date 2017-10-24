@@ -113,9 +113,11 @@ class FoodBoxDB:
 			"WHERE cards.card_id = '{0}';"
 		]
 		self.c.execute(
-			str.join(" ", query_str)
+			str.join(" ", query_str).format(cardID)
 		)
 		data = self.c.fetchone()
+		if data is None:
+			return exists, state
 		if len(data) != 0:
 			exists = True
 			state = data[1] == 1
