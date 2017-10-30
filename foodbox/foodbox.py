@@ -1,25 +1,24 @@
-import time
-import datetime
-from Hardware import LM393
-from Hardware import ULN2003
+from DB.foodboxDB import FoodBoxDB
 from Hardware import HX711
+from Hardware import LM393
 from Hardware import MFRC522
 from Hardware import RFIDCard
-from foodbox.system_settings import SystemSettings
-from foodbox.system_log import SystemLog
+from Hardware import ULN2003
 from foodbox.feeding_log import FeedingLog
 from foodbox.system_log import MessageTypes
-import socket
-import uuid
-from DB.foodboxDB import FoodBoxDB
-
+from foodbox.system_log import SystemLog
+from foodbox.system_settings import SystemSettings
 from zeroconf import ServiceBrowser
 from zeroconf import ServiceStateChange
 from zeroconf import Zeroconf
 from zeroconf import ZeroconfServiceTypes
-
+import datetime
 import json
+import pytz
 import requests
+import socket
+import time
+import uuid
 
 
 class FoodBox:
@@ -223,12 +222,14 @@ class FoodBox:
 			tmp_open_time = log.get_open_time()  # type: time.struct_time
 			tmp_open_datetime = datetime.datetime(
 				tmp_open_time.tm_year, tmp_open_time.tm_mon, tmp_open_time.tm_mday, tmp_open_time.tm_hour,
-				tmp_open_time.tm_min, tmp_open_time.tm_sec
+				tmp_open_time.tm_min, tmp_open_time.tm_sec,
+				tzinfo=pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_close_time = log.get_close_time()  # type: time.struct_time
 			tmp_close_datetime = datetime.datetime(
 				tmp_close_time.tm_year, tmp_close_time.tm_mon, tmp_close_time.tm_mday, tmp_close_time.tm_hour,
-				tmp_close_time.tm_min, tmp_close_time.tm_sec
+				tmp_close_time.tm_min, tmp_close_time.tm_sec,
+				tzinfo=pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_log_dict = {
 				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
