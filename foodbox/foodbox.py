@@ -220,17 +220,11 @@ class FoodBox:
 		logs_list = []
 		for log in logs_to_sync:
 			tmp_open_time = log.get_open_time()  # type: time.struct_time
-			tmp_open_datetime = datetime.datetime(
-				tmp_open_time.tm_year, tmp_open_time.tm_mon, tmp_open_time.tm_mday, tmp_open_time.tm_hour,
-				tmp_open_time.tm_min, tmp_open_time.tm_sec,
-				tzinfo=pytz.timezone("Asia/Jerusalem")
-			)
+			tmp_open_datetime = datetime.datetime.fromtimestamp(
+				tmp_open_time).astimezone(pytz.timezone("UTC"))
 			tmp_close_time = log.get_close_time()  # type: time.struct_time
-			tmp_close_datetime = datetime.datetime(
-				tmp_close_time.tm_year, tmp_close_time.tm_mon, tmp_close_time.tm_mday, tmp_close_time.tm_hour,
-				tmp_close_time.tm_min, tmp_close_time.tm_sec,
-				tzinfo=pytz.timezone("Asia/Jerusalem")
-			)
+			tmp_close_datetime = datetime.datetime.fromtimestamp(
+				tmp_close_time).astimezone(pytz.timezone("UTC"))
 			tmp_log_dict = {
 				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
 				"open_time": str(tmp_open_datetime), "close_time": str(tmp_close_datetime),
