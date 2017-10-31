@@ -261,7 +261,10 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 			self.mark_feeding_logs_synced(confirmed_ids)
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException,
+			Exception
+		) as e:
 			success = False
 			logstr = "Sync with brainbox failed - exception = {}.".format(
 				str(e.args)
@@ -365,7 +368,10 @@ class FoodBox:
 			success = True
 			if "brainbox_response" in vars():
 				brainbox_response.close()
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException,
+			Exception
+		) as e:
 			success = False
 			logstr = "Sync cards with brainbox failed - exception = {}.".format(
 				str(e.args)
@@ -424,7 +430,10 @@ class FoodBox:
 			print("response_box_name: {}\n\n".format(response_box_name))  # Debug message
 			if "brainbox_response" in vars():
 				brainbox_response.close()
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException,
+			Exception
+		) as e:
 			success = False
 			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(
 				str(e.args)
@@ -636,6 +645,10 @@ class FoodBox:
 		if info:
 			if state_change is ServiceStateChange.Added:
 				print("IP: {0} - PORT: {1}".format(socket.inet_ntoa(info.address), info.port))
+				if time.time() - time.mktime(self.__sync_last) >= self.__sync_interval:
+					self.__sync_last = time.localtime(
+						time.time() - self.__sync_interval + 20
+					)
 				self.__brainbox_ip_address = info.address
 				self.__brainbox_port_number = info.port
 				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=socket.inet_ntoa(info.address))
