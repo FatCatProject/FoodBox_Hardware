@@ -221,10 +221,12 @@ class FoodBox:
 		for log in logs_to_sync:
 			tmp_open_time = log.get_open_time()  # type: time.struct_time
 			tmp_open_datetime = datetime.datetime.fromtimestamp(
-				tmp_open_time).astimezone(pytz.timezone("Asia/Jerusalem"))
+				tmp_open_time, pytz.timezone("Asia/Jerusalem")
+			)
 			tmp_close_time = log.get_close_time()  # type: time.struct_time
 			tmp_close_datetime = datetime.datetime.fromtimestamp(
-				tmp_close_time).astimezone(pytz.timezone("Asia/Jerusalem"))
+				tmp_close_time, pytz.timezone("Asia/Jerusalem")
+			)
 			tmp_log_dict = {
 				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
 				"open_time": str(tmp_open_datetime), "close_time": str(tmp_close_datetime),
@@ -262,11 +264,12 @@ class FoodBox:
 				brainbox_response.close()
 			self.mark_feeding_logs_synced(confirmed_ids)
 		except (
-			ValueError, AttributeError, requests.exceptions.RequestException,
-			Exception
+			ValueError, AttributeError, requests.exceptions.RequestException
 		) as e:
 			success = False
-			logstr = "Sync with brainbox failed - exception = {}.".format("TODO")  # fixme
+			logstr = "Sync with brainbox failed - exception = {}.".format(
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -367,11 +370,12 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 		except (
-			ValueError, AttributeError, requests.exceptions.RequestException,
-			Exception
+			ValueError, AttributeError, requests.exceptions.RequestException
 		) as e:
 			success = False
-			logstr = "Sync cards with brainbox failed - exception = {}.".format("TODO")  # fixme
+			logstr = "Sync cards with brainbox failed - exception = {}.".format(
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -427,11 +431,12 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 		except (
-			ValueError, AttributeError, requests.exceptions.RequestException,
-			Exception
+			ValueError, AttributeError, requests.exceptions.RequestException
 		) as e:
 			success = False
-			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format("TODO")  # fixme
+			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -536,14 +541,22 @@ class FoodBox:
 			if card.get_name() == "ADMIN":
 				while self.__rfid_scanner.get_uid() == carduid:
 					time.sleep(5)
+			long_flag = False
 			while self.__proximity.is_blocked():
 				time.sleep(0.1)
-				if time.time() - time.mktime(open_time) >= self.__max_open_time:
+				if not long_flag and (
+						time.time() - time.mktime(open_time) >=
+						self.__max_open_time
+					):
+					long_flag = True
 					logstr = "Lid was opened for too long."
 					logtype = MessageTypes.Information
 					logsev = 0
 					syslog = SystemLog(
-						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev,
+						message=logstr,
+						message_type=logtype,
+						time_stamp=time.localtime(),
+						severity=logsev,
 						card=carduid
 					)
 					print("syslog: {}".format(syslog))  # Debug message
@@ -579,7 +592,7 @@ class FoodBox:
 
 	def open_lid(self):
 		# Fake open for debugging
-		# print("Opening.")
+		print("Opening lid.")
 		# time.sleep(1)
 		# print("Open.")
 		# self.__lid_open = True
@@ -587,11 +600,12 @@ class FoodBox:
 			return True
 		self.__stepper.quarter_rotation_forward()
 		self.__lid_open = True
+		print("Open.")
 		return True
 
 	def close_lid(self):
 		# Fake close for debugging
-		# print("Closing.")
+		print("Closing lid.")
 		# time.sleep(1)
 		# print("Closed.")
 		# self.__lid_open = False
@@ -599,6 +613,7 @@ class FoodBox:
 			return True
 		self.__stepper.quarter_rotation_backward()
 		self.__lid_open = False
+		print("Closed.")
 		return True
 
 	def start_network_discovery(self):
