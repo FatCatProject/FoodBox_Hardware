@@ -266,9 +266,7 @@ class FoodBox:
 			Exception
 		) as e:
 			success = False
-			logstr = "Sync with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+			logstr = "Sync with brainbox failed - exception = {}.".format("TODO")  # fixme
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -373,9 +371,7 @@ class FoodBox:
 			Exception
 		) as e:
 			success = False
-			logstr = "Sync cards with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+			logstr = "Sync cards with brainbox failed - exception = {}.".format("TODO")  # fixme
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -435,9 +431,7 @@ class FoodBox:
 			Exception
 		) as e:
 			success = False
-			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format("TODO")  # fixme
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
