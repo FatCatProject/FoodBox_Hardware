@@ -1,25 +1,24 @@
-import time
-import datetime
-from Hardware import LM393
-from Hardware import ULN2003
+from DB.foodboxDB import FoodBoxDB
 from Hardware import HX711
+from Hardware import LM393
 from Hardware import MFRC522
 from Hardware import RFIDCard
-from foodbox.system_settings import SystemSettings
-from foodbox.system_log import SystemLog
+from Hardware import ULN2003
 from foodbox.feeding_log import FeedingLog
 from foodbox.system_log import MessageTypes
-import socket
-import uuid
-from DB.foodboxDB import FoodBoxDB
-
+from foodbox.system_log import SystemLog
+from foodbox.system_settings import SystemSettings
 from zeroconf import ServiceBrowser
 from zeroconf import ServiceStateChange
 from zeroconf import Zeroconf
 from zeroconf import ZeroconfServiceTypes
-
+import datetime
 import json
+import pytz
 import requests
+import socket
+import time
+import uuid
 
 
 class FoodBox:
@@ -221,14 +220,12 @@ class FoodBox:
 		logs_list = []
 		for log in logs_to_sync:
 			tmp_open_time = log.get_open_time()  # type: time.struct_time
-			tmp_open_datetime = datetime.datetime(
-				tmp_open_time.tm_year, tmp_open_time.tm_mon, tmp_open_time.tm_mday, tmp_open_time.tm_hour,
-				tmp_open_time.tm_min, tmp_open_time.tm_sec
+			tmp_open_datetime = datetime.datetime.fromtimestamp(
+				tmp_open_time, pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_close_time = log.get_close_time()  # type: time.struct_time
-			tmp_close_datetime = datetime.datetime(
-				tmp_close_time.tm_year, tmp_close_time.tm_mon, tmp_close_time.tm_mday, tmp_close_time.tm_hour,
-				tmp_close_time.tm_min, tmp_close_time.tm_sec
+			tmp_close_datetime = datetime.datetime.fromtimestamp(
+				tmp_close_time, pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_log_dict = {
 				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
@@ -266,11 +263,13 @@ class FoodBox:
 			if "brainbox_response" in vars():
 				brainbox_response.close()
 			self.mark_feeding_logs_synced(confirmed_ids)
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException
+		) as e:
 			success = False
 			logstr = "Sync with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -370,11 +369,13 @@ class FoodBox:
 			success = True
 			if "brainbox_response" in vars():
 				brainbox_response.close()
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException
+		) as e:
 			success = False
 			logstr = "Sync cards with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -429,11 +430,13 @@ class FoodBox:
 			print("response_box_name: {}\n\n".format(response_box_name))  # Debug message
 			if "brainbox_response" in vars():
 				brainbox_response.close()
-		except (ValueError, AttributeError, requests.exceptions.RequestException) as e:
+		except (
+			ValueError, AttributeError, requests.exceptions.RequestException
+		) as e:
 			success = False
 			logstr = "Sync FoodBox with brainbox failed - exception = {}.".format(
-				str(e.args)
-			)
+				"TODO"
+			)  # fixme (#74)
 			logtype = MessageTypes.Error
 			logsev = 2
 			syslog = SystemLog(message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev)
@@ -538,14 +541,22 @@ class FoodBox:
 			if card.get_name() == "ADMIN":
 				while self.__rfid_scanner.get_uid() == carduid:
 					time.sleep(5)
+			long_flag = False
 			while self.__proximity.is_blocked():
 				time.sleep(0.1)
-				if time.time() - time.mktime(open_time) >= self.__max_open_time:
+				if not long_flag and (
+						time.time() - time.mktime(open_time) >=
+						self.__max_open_time
+					):
+					long_flag = True
 					logstr = "Lid was opened for too long."
 					logtype = MessageTypes.Information
 					logsev = 0
 					syslog = SystemLog(
-						message=logstr, message_type=logtype, time_stamp=time.localtime(), severity=logsev,
+						message=logstr,
+						message_type=logtype,
+						time_stamp=time.localtime(),
+						severity=logsev,
 						card=carduid
 					)
 					print("syslog: {}".format(syslog))  # Debug message
@@ -581,7 +592,7 @@ class FoodBox:
 
 	def open_lid(self):
 		# Fake open for debugging
-		# print("Opening.")
+		print("Opening lid.")
 		# time.sleep(1)
 		# print("Open.")
 		# self.__lid_open = True
@@ -589,11 +600,12 @@ class FoodBox:
 			return True
 		self.__stepper.quarter_rotation_forward()
 		self.__lid_open = True
+		print("Open.")
 		return True
 
 	def close_lid(self):
 		# Fake close for debugging
-		# print("Closing.")
+		print("Closing lid.")
 		# time.sleep(1)
 		# print("Closed.")
 		# self.__lid_open = False
@@ -601,6 +613,7 @@ class FoodBox:
 			return True
 		self.__stepper.quarter_rotation_backward()
 		self.__lid_open = False
+		print("Closed.")
 		return True
 
 	def start_network_discovery(self):
@@ -641,6 +654,10 @@ class FoodBox:
 		if info:
 			if state_change is ServiceStateChange.Added:
 				print("IP: {0} - PORT: {1}".format(socket.inet_ntoa(info.address), info.port))
+				if time.time() - time.mktime(self.__sync_last) >= self.__sync_interval:
+					self.__sync_last = time.localtime(
+						time.time() - self.__sync_interval + 20
+					)
 				self.__brainbox_ip_address = info.address
 				self.__brainbox_port_number = info.port
 				self.__set_system_setting(setting=SystemSettings.BrainBox_IP, value=socket.inet_ntoa(info.address))
