@@ -221,11 +221,11 @@ class FoodBox:
 		for log in logs_to_sync:
 			tmp_open_time = log.get_open_time()  # type: time.struct_time
 			tmp_open_datetime = datetime.datetime.fromtimestamp(
-				tmp_open_time, pytz.timezone("Asia/Jerusalem")
+				time.mktime(tmp_open_time), pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_close_time = log.get_close_time()  # type: time.struct_time
 			tmp_close_datetime = datetime.datetime.fromtimestamp(
-				tmp_close_time, pytz.timezone("Asia/Jerusalem")
+				time.mktime(tmp_close_time), pytz.timezone("Asia/Jerusalem")
 			)
 			tmp_log_dict = {
 				"feeding_id": log.get_id(), "card_id": log.get_card().get_uid(),
@@ -598,7 +598,8 @@ class FoodBox:
 		# self.__lid_open = True
 		if self.__lid_open:
 			return True
-		self.__stepper.quarter_rotation_forward()
+#		self.__stepper.quarter_rotation_forward()
+		self.__stepper.quarter_rotation_backward()
 		self.__lid_open = True
 		print("Open.")
 		return True
@@ -611,7 +612,8 @@ class FoodBox:
 		# self.__lid_open = False
 		if not self.__lid_open:
 			return True
-		self.__stepper.quarter_rotation_backward()
+#		self.__stepper.quarter_rotation_backward()
+		self.__stepper.quarter_rotation_forward()
 		self.__lid_open = False
 		print("Closed.")
 		return True
