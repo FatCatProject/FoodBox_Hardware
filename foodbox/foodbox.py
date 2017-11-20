@@ -598,7 +598,8 @@ class FoodBox:
 		# self.__lid_open = True
 		if self.__lid_open:
 			return True
-		self.__stepper.quarter_rotation_forward()
+#		self.__stepper.quarter_rotation_forward()
+		self.__stepper.quarter_rotation_backward()
 		self.__lid_open = True
 		print("Open.")
 		return True
@@ -611,7 +612,8 @@ class FoodBox:
 		# self.__lid_open = False
 		if not self.__lid_open:
 			return True
-		self.__stepper.quarter_rotation_backward()
+#		self.__stepper.quarter_rotation_backward()
+		self.__stepper.quarter_rotation_forward()
 		self.__lid_open = False
 		print("Closed.")
 		return True
