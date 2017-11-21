@@ -6,6 +6,7 @@ Written in Python3
 
 Dependencies:
 - netifaces (pip3)
+- pytz (pip3)
 - requests (pip3)
 - RPi.GPIO (pip3)
 - [SPI-Py](https://github.com/lthiery/SPI-Py)
