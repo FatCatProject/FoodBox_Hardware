@@ -76,7 +76,7 @@ class FoodBox:
 			dout=4, pd_sck=18, gain=128, readBits=24, offset=self.__scale_offset, scale=self.__scale_scale)
 		self.__stepper = ULN2003(
 			pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025, presentation_mode=presentation_mode)
-		self.__scale.tare()
+		self.__scale.tare_2()
 		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
 		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units_2())
 
@@ -722,3 +722,4 @@ class FoodBox:
 			sync_uid, sync_success = self.sync_with_brainbox()
 		if sync_success:
 			self.sync_cards_from_brainbox()
+

@@ -114,7 +114,7 @@ class HX711:
 	def power_up(self):
 		GPIO.output(self.PD_SCK, False)
 
-	def get_units_2(self, times=10):
+	def get_units_2(self, times=3):
 		units_array = []
 		avg = 0
 		for i in range(times):
@@ -123,19 +123,89 @@ class HX711:
 			avg += tmp_units
 		avg = (avg / len(units_array))
 
-		d = 0
-		for n in units_array:
-			d += sqrt((n - avg) ** 2)
-		d = sqrt((d / len(units_array)))
-		drop_avg = [
-			n for n in units_array
-			if sqrt((n - avg) ** 2) <= d
-		]
+		flag = True
+		while flag:
+			d = 0
+			for n in units_array:
+				d += sqrt((n - avg) ** 2)
+			d = sqrt((d / len(units_array)))
+			drop_avg = [
+				n for n in units_array
+				if sqrt((n - avg) ** 2) <= d
+			]
 
+			if len(drop_avg) > 0:
+				flag = False
+				continue
+			if len(units_array) == 0:
+				print("len(units_array) == 0, Bad.")
+				drop_avg = [avg]
+				flag = False
+				continue
+			min = units_array[0]
+			max = min
+			for n in units_array:
+				if n < min:
+					min = n
+				if n > max:
+					max = n
+			if sqrt((min - avg) ** 2) > sqrt((max - avg) ** 2):
+				avg = ((avg * len(units_array)) - min) / (len(units_array) - 1)
+				units_array.remove(min)
+			else:
+				avg = ((avg * len(units_array)) - max) / (len(units_array) - 1)
+				units_array.remove(max)
 		avg = 0
 		for n in drop_avg:
 			avg += n
 		avg = avg / len(drop_avg)
 
 		return avg
+
+	def tare_2(self, times=15):
+		units_array = []
+		avg = 0
+		for i in range(times):
+			tmp_units = self.read_average()
+			units_array.append(tmp_units)
+			avg += tmp_units
+		avg = (avg / len(units_array))
+
+		flag = True
+		while flag:
+			d = 0
+			for n in units_array:
+				d += sqrt((n - avg) ** 2)
+			d = sqrt((d / len(units_array)))
+			drop_avg = [
+				n for n in units_array
+				if sqrt((n - avg) ** 2) <= d
+			]
+
+			if len(drop_avg) > 0:
+				flag = False
+				continue
+			if len(units_array) == 0:
+				print("len(units_array) == 0, Bad.")
+				drop_avg = [avg]
+				flag = False
+				continue
+			min = units_array[0]
+			max = min
+			for n in units_array:
+				if n < min:
+					min = n
+				if n > max:
+					max = n
+			if sqrt((min - avg) ** 2) > sqrt((max - avg) ** 2):
+				avg = ((avg * len(units_array)) - min) / (len(units_array) - 1)
+				units_array.remove(min)
+			else:
+				avg = ((avg * len(units_array)) - max) / (len(units_array) - 1)
+				units_array.remove(max)
+		avg = 0
+		for n in drop_avg:
+			avg += n
+		sum = avg / len(drop_avg)
+		self.set_offset(sum)
 
