@@ -53,7 +53,7 @@ class FoodBox:
 		if self.__last_weight < 0:
 			self.__last_weight = 0
 		self.__scale_offset = int(self.__get_system_setting(SystemSettings.Scale_Offset) or -96096)
-		self.__scale_scale = int(self.__get_system_setting(SystemSettings.Scale_Scale) or 925)
+		self.__scale_scale = int(self.__get_system_setting(SystemSettings.Scale_Scale) or 930)
 		self.__foodbox_id = self.__get_system_setting(SystemSettings.FoodBox_ID)
 		if self.__foodbox_id is None:
 			self.__foodbox_id = uuid.uuid4().hex
@@ -78,12 +78,12 @@ class FoodBox:
 			pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025, presentation_mode=presentation_mode)
 		self.__scale.tare()
 		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
-		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units())
+		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units_2())
 
 		self.start_network_discovery()
 		self.__sync_on_change = sync_on_change
 		print("Ready")
-		print("Weight on Ready is: ", self.__scale.get_units())
+		print("Weight on Ready is: ", self.__scale.get_units_2())
 
 	def __del__(self):
 		if self.__browser is not None:
@@ -534,7 +534,7 @@ class FoodBox:
 			print("syslog: {}".format(syslog))  # Debug message
 			self.write_system_log(syslog)
 			open_time = time.localtime()
-			start_weight = self.__scale.get_units()
+			start_weight = self.__scale.get_units_2()
 			print("Starting weight is: ", start_weight)
 			self.open_lid()
 			time.sleep(5)
@@ -565,7 +565,7 @@ class FoodBox:
 
 			self.close_lid()
 			close_time = time.localtime()
-			end_weight = self.__scale.get_units()
+			end_weight = self.__scale.get_units_2()
 			print("End weight is: ", end_weight)
 			if admin_card:
 				self.admin_refill(start_weight=start_weight, end_weight=end_weight, card_uid=carduid)

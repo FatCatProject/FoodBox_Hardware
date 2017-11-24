@@ -3,6 +3,7 @@
 # Using Richard-Major's work
 # https://gist.github.com/Richard-Major/64e94338c2d08eb1221c2eca9e014362
 import RPi.GPIO as GPIO
+from math import sqrt
 
 
 # fatcat1 OFFSET = -96096, SCALE=1035
@@ -112,3 +113,29 @@ class HX711:
 
 	def power_up(self):
 		GPIO.output(self.PD_SCK, False)
+
+	def get_units_2(self, times=10):
+		units_array = []
+		avg = 0
+		for i in range(times):
+			tmp_units = self.get_units()
+			units_array.append(tmp_units)
+			avg += tmp_units
+		avg = (avg / len(units_array))
+
+		d = 0
+		for n in units_array:
+			d += sqrt((n - avg) ** 2)
+		d = sqrt((d / len(units_array)))
+		drop_avg = [
+			n for n in units_array
+			if sqrt((n - avg) ** 2) <= d
+		]
+
+		avg = 0
+		for n in drop_avg:
+			avg += n
+		avg = avg / len(drop_avg)
+
+		return avg
+
