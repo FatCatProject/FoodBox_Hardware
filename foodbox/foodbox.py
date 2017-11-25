@@ -77,7 +77,7 @@ class FoodBox:
 		self.__stepper = ULN2003(
 			pin_a_1=27, pin_a_2=22, pin_b_1=23, pin_b_2=24, delay=0.025, presentation_mode=presentation_mode)
 		self.__scale.tare_2()
-		self.__scale.set_offset(self.__scale_offset + self.__last_weight)
+		self.__scale.set_offset(self.__scale.get_offset() + self.__last_weight)
 		self.__set_system_setting(SystemSettings.Last_Weight, self.__scale.get_units_2())
 
 		self.start_network_discovery()
